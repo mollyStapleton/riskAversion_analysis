@@ -6,7 +6,7 @@
 clear all 
 close all 
 
-base_path = ['C:\Users\jf22662\OneDrive - University of Bristol\Documents\MATLAB\riskaversion_task\data\'];
+base_path = ['C:\Users\jf22662\OneDrive - University of Bristol\Documents\GitHub\riskAversion_analysis\riskAversion_analysis\data\'];
 cd(base_path);
 
 % select job to run 
