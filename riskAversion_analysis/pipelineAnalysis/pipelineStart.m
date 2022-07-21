@@ -11,8 +11,8 @@ cd(base_path);
 
 % select job to run 
 
-process_behav = 1;
-process_eyelink = 0;
+process_behav = 0;
+process_eyelink = 1;
 
 ptIdx = [{'001'}, {'004'}];
 
@@ -56,5 +56,19 @@ for isubject = 1: length(ptIdx)
     end
 end
 end
+
+if process_eyelink
+for isubject = 1: length(ptIdx)
+    cd([ptIdx{isubject} '\']);
+    if ~exist([base_path ptIdx{isubject} '\processed_data\'])
+        mkdir([base_path ptIdx{isubject} '\processed_data\']);
+        
+    end
+    
+    cd([base_path ptIdx{isubject} '\processed_data\']);
+
+end
+end
+
 
 
