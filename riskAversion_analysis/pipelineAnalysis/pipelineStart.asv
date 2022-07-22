@@ -6,13 +6,13 @@
 clear all 
 close all 
 
-base_path = ['C:\Users\jf22662\OneDrive - University of Bristol\Documents\MATLAB\riskaversion_task\data\'];
+base_path = ['C:\Users\jf22662\OneDrive - University of Bristol\Documents\GitHub\riskAversion_analysis\riskAversion_analysis\data\'];
 cd(base_path);
 
 % select job to run 
 
-process_behav = 1;
-process_eyelink = 0;
+process_behav = 0;
+process_eyelink = 1;
 
 ptIdx = [{'001'}, {'004'}];
 
@@ -46,130 +46,95 @@ for isubject = 1: length(ptIdx)
         
         load(saveDataFilename, 'allData');
        
-        % plot accuracy P(high average choice| both different cnd)
-        % 1 = low safe
-        % 2 = low risky 
-        % 3 = high safe
-        % 4 = high risky 
-        bin = [1:24:120];
-        binSize = 24;
+        figSavename = [ptIdx{isubject} '_behaviouralOverview'];
 
-        figure(1);
-        f = gcf;
-        f.Units = 'centimeters';
-        f.Position = [0.0423 5.6938 40.5342 14.4410];
+        if exist("figSavename")
 
-        for blockType = 1:2
-            if blockType == 1 
-                col2plot = 'r'; %gaussian
-                x2plot = [1:2];
-            elseif blockType == 2 
-                col2plot = 'b'; %bimodal
-                x2plot = [3:4];
-            end
-
-            blockIdx = find(allData.distType == blockType);
-            tmpBlockData = allData(blockIdx, :);
-
-            % risk preferences across both-high and both-low for all trials
-            high_idx_blk    = (tmpBlockData.cnd_idx == 3);
-            low_idx_blk     = (tmpBlockData.cnd_idx == 2);
-
-            high_high_blk = find(tmpBlockData.stimulus_choice(high_idx_blk) == 2 ...
-                | tmpBlockData.stimulus_choice(high_idx_blk) == 4);
-
-            high_low_blk = find(tmpBlockData.stimulus_choice(low_idx_blk) == 2 ...
-                | tmpBlockData.stimulus_choice(low_idx_blk) == 4);
-
-            prop_risk_high_blk   = length(high_high_blk)/sum(high_idx_blk==1);
-            prop_risk_low_blk    = length(high_low_blk)/sum(low_idx_blk==1);
-
-            hb = subplot(1, 3, 2) %risk pref. - over trials 
-            hold on
-            bar(x2plot(1), [prop_risk_high_blk], 'FaceColor', col2plot);
-            hold on 
-            bar(x2plot(2), prop_risk_low_blk, 'FaceColor', col2plot, 'FaceAlpha', 0.25);
-            title('Risk Choices: All Trials');
-            % choice accuracy and risk preferences: trial binned
-
-            for ibin = 1: length(bin)
-                
-                tmpBinIdx = find(ismember(tmpBlockData.trialNum, (bin(ibin): (bin(ibin) + binSize -1))));
-                
-                % return condition indices of the binned trials
-                diffCnd_idx = (tmpBlockData.cnd_idx(tmpBinIdx) == 1);
-                high_idx    = (tmpBlockData.cnd_idx(tmpBinIdx) == 3);
-                low_idx     = (tmpBlockData.cnd_idx(tmpBinIdx) == 2);
-
-                
-                high_diff = find(tmpBlockData.stimulus_choice(tmpBinIdx(diffCnd_idx)) == 3 ...
-                    | tmpBlockData.stimulus_choice(tmpBinIdx(diffCnd_idx)) == 4);
-
-                high_high = find(tmpBlockData.stimulus_choice(tmpBinIdx(high_idx)) == 2 ...
-                    | tmpBlockData.stimulus_choice(tmpBinIdx(high_idx)) == 4);
-
-                high_low = find(tmpBlockData.stimulus_choice(tmpBinIdx(low_idx)) == 2 ...
-                    | tmpBlockData.stimulus_choice(tmpBinIdx(low_idx)) == 4);
-
-                prop_accuracy(ibin)     = length(high_diff)/sum(diffCnd_idx == 1);
-                prop_risk_high(ibin)    = length(high_high)/sum(high_idx==1);
-                prop_risk_low(ibin)     = length(high_low)/sum(low_idx==1);
-                
-                ht = subplot(1, 3, 1) %choice accuracy - over trials  
-                plot(ibin, prop_accuracy(ibin), 'o', 'MarkerFaceColor', col2plot, 'MarkerEdgeColor', col2plot, 'linew', 1.2);
-                hold on
-                xlabel('Trials (Binned)');
-                ylabel('P(High|Different)');
-                title('Choice Accuracy');
-
-                hh = subplot('Position', [0.7, 0.11, 0.125, 0.81]);
-                plot(ibin, prop_risk_high(ibin), 'o', 'MarkerFaceColor', col2plot, 'MarkerEdgeColor', col2plot, 'linew', 1.2);
-                hold on
-                xlabel('Trials (Binned)');
-                ylabel('P(Risky|Both-High)');
-
-                hl = subplot('Position', [0.87 0.11 0.125 0.81]);
-                plot(ibin, prop_risk_low(ibin), 'o', 'MarkerFaceColor', col2plot, 'MarkerEdgeColor', col2plot,...
-                   'linew', 1.2);
-                hold on
-                alpha(0.25);
-                xlabel('Trials (Binned)');
-                ylabel('P(Risky|Both-Low)');
-
-            end
-
-            axes(hb);
-            set(hb, 'FontName', 'times');
-            set(hb, 'XTick', [1 2 3 4]);
-            set(hb, 'XTickLabel', {'Both-High', 'Both-Low', 'Both-High', 'Both-Low'});
-            set(hb, 'XTickLabelRotation', 45);
-            ylim([0 1]);
-            axes(ht);
-            set(ht, 'FontName', 'times');
-            hold on
-            plot([1:5], prop_accuracy, col2plot, 'LineWidth', 1.2);
-            ylim([0 1]);
-            xlim([0 6]);
-            axes(hh);
-            set(hh, 'FontName', 'times');
-            hold on
-            plot([1:5], prop_risk_high, col2plot, 'LineWidth', 1.2);
-            ylim([0 1]);
-            xlim([0 6]);
-            title('P(Risky|Both-High): Binned Trials');
-            axes(hl)
-            set(hl, 'FontName', 'times');
-            plot([1:5], prop_risk_low, col2plot, 'LineWidth', 1.2);
-            ylim([0 1]);
-            xlim([0 6]);
-            title('P(Risky|Both-Low): Binned Trials');
+            plot_behavData(ptIdx{isubject}, allData, figSavename)
 
         end
-
-        axes(hb);
-        lgn = legend({'Gaussian', '', 'Bimodal', ''});
-        
     end
 end
 end
+
+if process_eyelink
+
+    ft_defaults;
+
+for isubject = 1: length(ptIdx)
+    cd([ptIdx{isubject} '\']);
+    if ~exist([base_path ptIdx{isubject} '\processed_data\'])
+        mkdir([base_path ptIdx{isubject} '\processed_data\']);
+        
+    end
+    
+    for iblock = 1:4
+
+        cd([base_path ptIdx{isubject}]);
+        tmpFilename = ['P' ptIdx{isubject} 'BLK' num2str(iblock) '.asc'];
+
+        % read in the asc EyeLink file
+        asc = read_eyelink_ascNK_AU(tmpFilename);
+        
+        % create events and data structure, parse asc
+        [data, event, blinksmp, saccsmp] = asc2dat(asc);
+
+        eyedata = table();
+        
+        plotMe = true;
+        newpupil = blink_interpolate(data, blinksmp, plotMe);
+        data.trial{1}(find(strcmp(data.label, 'EyePupil')==1),:) = newpupil;
+
+        eyedata.time = data.time{1}';
+        eyedata.pupilSize = data.trial{1}(3, :)';
+
+        [trl] = riskAversion_trialfun(event);
+
+        
+
+        for itrial = 1: length(trl)
+            fullData = [];
+            tmpEncodes = trl(itrial).encodes;
+
+            for icodes = 2: length(tmpEncodes)-1 %loop over the trial epochs
+                  tmpData = [];  
+%                 if tmpEncodes(icodes, 1) == 40   %ITI, 1.5s
+%                     
+%                 elseif tmpEncodes(icodes, 1) == 10  %fix onset, 0.5s
+% 
+%                 elseif tmpEncodes(icodes, 1) == 14  %stim on wait, 0.8s
+% 
+%                 elseif tmpEncodes(icodes, 1) == 15   %stim on, go
+% 
+%                 elseif tmpEncodes(icodes, 1) == 25   %response 
+% 
+%                 elseif tmpEncodes(icodes, 1) == 26   %delay, 0.8s
+% 
+%                 elseif tmpEncodes(icodes, 1) == 31   %arrow on, 0.8s
+% 
+%                 elseif tmpEncodes(icodes, 1) == 30   %reward on, 1.5s
+% 
+%                 elseif tmpEncodes(icodes, 1) == 32   %cumulative reward on, 1.5s
+% 
+%                 end
+
+                  tmpData(1, :) = data.trial{1}(3, (trl(itrial).encodes(icodes, 2): trl(itrial).encodes(icodes+1, 2)));
+                  tmpData(2, :) = data.time{1}(1, (trl(itrial).encodes(icodes, 2): trl(itrial).encodes(icodes+1, 2)));
+
+                  for idx = 1: length(trl(itrial).encodes(icodes, 2): trl(itrial).encodes(icodes+1, 2))
+
+                        tmpData(3, idx) = trl(itrial).encodes(icodes,1);
+                  end
+
+                  fullData = [fullData tmpData];
+
+            end
+
+            trl(itrial).data = fullData;
+        end
+    end
+end
+end
+
+
 

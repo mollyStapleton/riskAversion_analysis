@@ -58,17 +58,32 @@ end
 end
 
 if process_eyelink
+
+    ft_defaults;
+
 for isubject = 1: length(ptIdx)
+
     cd([ptIdx{isubject} '\']);
+
     if ~exist([base_path ptIdx{isubject} '\processed_data\'])
         mkdir([base_path ptIdx{isubject} '\processed_data\']);
-        
     end
-    
+
     cd([base_path ptIdx{isubject} '\processed_data\']);
+    for iblock = 1:4
 
+        saveFilename = ['P' ptIdx{isubject} 'BLK' num2str(iblock) '_extracted.mat'];
+
+        if ~exist(saveFilename)
+
+            [trl] = preprocess_eyelink(ptIdx, iblock)
+            cd([base_path ptIdx{isubject} '\processed_data\']);
+            save(saveFilename, 'trl');
+
+        else
+            load(saveFilename, 'trl');
+        end
+    end
 end
 end
-
-
 
