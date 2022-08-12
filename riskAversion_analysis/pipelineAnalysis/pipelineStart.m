@@ -9,22 +9,28 @@ close all
 base_path = ['C:\Users\jf22662\OneDrive - University of Bristol\Documents\GitHub\riskAversion_analysis\riskAversion_analysis\data\'];
 cd(base_path);
 
-% select job to run 
+%---------------------------------
+% SELECT JOB TO RUN 
+%--------------------------------------------
 
-process_behav = 0;
-process_eyelink = 1;
+process_behav   = 0;    %takes individual participants data and produces a matrix of all relevant information for analysis. 
+                        %saves this data within each participants folder 
+                        %produces and saves a figure of behaviour overview 
+                        %analysis replicated from Moeller et al., 2021
 
-ptIdx = [{'001'}, {'004'}];
+
+concat_behav    = 0;    %concatenates each individual participant matrix into a single matrix for population analyses
+plot_popBehav   = 1;    %plots average and SEM of behaviour across all subjects 
+
+process_eyelink = 0;
+
+%-----------------------------------------------------------------------
+
+ptIdx = [{'004', '005', '006', '007'}];
+
+%----- JOB SUBFUNCTIONS: Behaviour ---------------------------------------------
 
 if process_behav
-
-% possible stimulus combinations 
- stimCombos = [1 3; 1 4; 2 3; 2 4;,...  %% different [1 2 3 4]
-              1 2;,...                 %% both low [5]
-              3 4;,...                  %% both high  [6]
-              3 1; 4 1; 3 2; 4 2;,...  %% different [7 8 9 10]
-              2 1;,...                 %% both low [11]
-              4 3];                   %% both high  [12]
 
 for isubject = 1: length(ptIdx)
 
@@ -43,19 +49,46 @@ for isubject = 1: length(ptIdx)
          save(saveDataFilename, 'allData');
 
     else 
-        
+
         load(saveDataFilename, 'allData');
        
         figSavename = [ptIdx{isubject} '_behaviouralOverview'];
 
         if exist("figSavename")
 
-            plot_behavData(ptIdx{isubject}, allData, figSavename)
+            plot_behavData(ptIdx{isubject}, allData, figSavename);
 
         end
     end
 end
 end
+
+if concat_behav
+   concatData = [];
+    for isubject = 1: length(ptIdx)
+    
+        cd([base_path ptIdx{isubject} '\']);
+        if ~exist([base_path ptIdx{isubject} '\processed_data\'])
+            mkdir([base_path ptIdx{isubject} '\processed_data\']);
+            
+        end
+        
+        cd([base_path ptIdx{isubject} '\processed_data\']);
+        dataFilename = ['fullSession_' ptIdx{isubject} '.mat'];
+        load(dataFilename);
+        
+        concatData = [concatData; allData];
+        
+    end
+
+    % save concatenated data file 
+    savePopFilename = ['populationBehav.mat'];
+    cd([base_path]);
+    save(savePopFilename, 'concatData');
+
+end
+
+%----- JOB SUBFUNCTIONS: eyelink ---------------------------------------------
 
 if process_eyelink
 
@@ -76,7 +109,7 @@ for isubject = 1: length(ptIdx)
 
         if ~exist(saveFilename)
 
-            [trl] = preprocess_eyelink(ptIdx, iblock)
+            [trl] = preprocess_eyelink(ptIdx, iblock);
             cd([base_path ptIdx{isubject} '\processed_data\']);
             save(saveFilename, 'trl');
 
@@ -86,4 +119,7 @@ for isubject = 1: length(ptIdx)
     end
 end
 end
+
+
+
 

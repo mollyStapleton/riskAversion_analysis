@@ -5,6 +5,7 @@ function plot_behavData(ptIdx, allData, figSavename)
 % 2 = low risky
 % 3 = high safe
 % 4 = high risky
+
 bin = [1:24:120];
 binSize = 24;
 
@@ -29,11 +30,10 @@ for blockType = 1:2
     high_idx_blk    = (tmpBlockData.cnd_idx == 3);
     low_idx_blk     = (tmpBlockData.cnd_idx == 2);
 
-    high_high_blk = find(tmpBlockData.stimulus_choice(high_idx_blk) == 2 ...
-        | tmpBlockData.stimulus_choice(high_idx_blk) == 4);
-
-    high_low_blk = find(tmpBlockData.stimulus_choice(low_idx_blk) == 2 ...
-        | tmpBlockData.stimulus_choice(low_idx_blk) == 4);
+    % risky choice selection in both-high
+    high_high_blk = find(tmpBlockData.stimulus_choice(high_idx_blk) == 4);
+    % risky choice selection in both-low
+    high_low_blk = find(tmpBlockData.stimulus_choice(low_idx_blk) == 2);
 
     prop_risk_high_blk   = length(high_high_blk)/sum(high_idx_blk==1);
     prop_risk_low_blk    = length(high_low_blk)/sum(low_idx_blk==1);
@@ -51,6 +51,8 @@ for blockType = 1:2
         tmpBinIdx = find(ismember(tmpBlockData.trialNum, (bin(ibin): (bin(ibin) + binSize -1))));
 
         % return condition indices of the binned trials
+        % random condition selection ordering will deliver different number
+        % of conditions per bin??
         diffCnd_idx = (tmpBlockData.cnd_idx(tmpBinIdx) == 1);
         high_idx    = (tmpBlockData.cnd_idx(tmpBinIdx) == 3);
         low_idx     = (tmpBlockData.cnd_idx(tmpBinIdx) == 2);
