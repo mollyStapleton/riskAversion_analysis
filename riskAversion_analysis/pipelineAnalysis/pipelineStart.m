@@ -13,28 +13,31 @@ cd(base_path);
 % SELECT JOB TO RUN 
 %--------------------------------------------
 
-process_behav   = 0;    %takes individual participants data and produces a matrix of all relevant information for analysis. 
+preprocess_behav   = 0;    %takes individual participants data and produces a matrix of all relevant information for analysis. 
                         %saves this data within each participants folder 
                         %produces and saves a figure of behaviour overview 
                         %analysis replicated from Moeller et al., 2021
 
 
 concat_behav    = 0;    %concatenates each individual participant matrix into a single matrix for population analyses
-plot_popBehav   = 1;    %plots average and SEM of behaviour across all subjects 
+plot_popBehav   = 0;    %plots average and SEM of behaviour across all subjects 
 
-process_eyelink = 0;
+process_eyelink = 1;
 
 %-----------------------------------------------------------------------
 
-ptIdx = [{'004', '005', '006', '007'}];
+% 004, 0010, 0011, 0012: only behaviour data 
+
+ptIdx = [{'004', '005', '006', '007', '008', '009','0010','0011',...
+    '0012', '014', '015', '016', '017', '018'}];
 
 %----- JOB SUBFUNCTIONS: Behaviour ---------------------------------------------
 
-if process_behav
+if preprocess_behav
 
 for isubject = 1: length(ptIdx)
-
-    cd([ptIdx{isubject} '\']);
+    close all hidden
+    cd([base_path ptIdx{isubject} '\']);
     if ~exist([base_path ptIdx{isubject} '\processed_data\'])
         mkdir([base_path ptIdx{isubject} '\processed_data\']);
         
@@ -43,7 +46,7 @@ for isubject = 1: length(ptIdx)
     cd([base_path ptIdx{isubject} '\processed_data\']);
     saveDataFilename = ['fullSession_' ptIdx{isubject} '.mat'];
 
-    if ~exist(saveDataFilename)
+    if exist(saveDataFilename)
 
          [allData] = preprocess_behavData(ptIdx{isubject});
          save(saveDataFilename, 'allData');
@@ -51,15 +54,16 @@ for isubject = 1: length(ptIdx)
     else 
 
         load(saveDataFilename, 'allData');
-       
+
+    end
+
         figSavename = [ptIdx{isubject} '_behaviouralOverview'];
 
-        if exist("figSavename")
+        if ~exist(figSavename)
 
             plot_behavData(ptIdx{isubject}, allData, figSavename);
 
         end
-    end
 end
 end
 
@@ -88,6 +92,14 @@ if concat_behav
 
 end
 
+if plot_popBehav
+
+    figSavename = ['population_behaviour'];
+    plot_populationBehaviour(base_path, ptIdx, figSavename);
+
+end
+
+
 %----- JOB SUBFUNCTIONS: eyelink ---------------------------------------------
 
 if process_eyelink
@@ -96,25 +108,36 @@ if process_eyelink
 
 for isubject = 1: length(ptIdx)
 
-    cd([ptIdx{isubject} '\']);
+    cd([base_path ptIdx{isubject} '\']);
 
     if ~exist([base_path ptIdx{isubject} '\processed_data\'])
         mkdir([base_path ptIdx{isubject} '\processed_data\']);
     end
-
-    cd([base_path ptIdx{isubject} '\processed_data\']);
+   
     for iblock = 1:4
 
-        saveFilename = ['P' ptIdx{isubject} 'BLK' num2str(iblock) '_extracted.mat'];
+        % include line to account for the fact not all participants possess
+        % eye data 
+        cd([base_path ptIdx{isubject}]);
+        loadEyeFilename = ['P' ptIdx{isubject} 'BLK' num2str(iblock) '.edf'];
 
-        if ~exist(saveFilename)
+        if ~exist(loadEyeFilename)
 
-            [trl] = preprocess_eyelink(ptIdx, iblock);
-            cd([base_path ptIdx{isubject} '\processed_data\']);
-            save(saveFilename, 'trl');
+            continue;
 
         else
-            load(saveFilename, 'trl');
+            cd([base_path ptIdx{isubject} '\processed_data\']);
+            saveFilename = ['P' ptIdx{isubject} 'BLK' num2str(iblock) '_extracted.mat'];
+
+            if ~exist(saveFilename)
+    
+                [trl] = preprocess_eyelink(base_path, ptIdx{isubject}, iblock);
+                cd([base_path ptIdx{isubject} '\processed_data\']);
+                save(saveFilename, 'trl');
+    
+            else
+                load(saveFilename, 'trl');
+            end
         end
     end
 end
