@@ -129,7 +129,7 @@ for isubject = 1: length(ptIdx)
             cd([base_path ptIdx{isubject} '\processed_data\']);
             saveFilename = ['P' ptIdx{isubject} 'BLK' num2str(iblock) '_extracted.mat'];
 
-            if ~exist(saveFilename)
+            if exist(saveFilename)
     
                 [trl] = preprocess_eyelink(base_path, ptIdx{isubject}, iblock);
                 cd([base_path ptIdx{isubject} '\processed_data\']);
