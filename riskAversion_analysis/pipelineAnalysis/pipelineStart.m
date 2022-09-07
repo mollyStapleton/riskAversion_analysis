@@ -24,6 +24,8 @@ plot_popBehav   = 0;    %plots average and SEM of behaviour across all subjects
 
 process_eyelink = 1;
 
+plot_eyelinkData    = 0;
+
 %-----------------------------------------------------------------------
 
 % 004, 0010, 0011, 0012: only behaviour data 
@@ -31,6 +33,8 @@ process_eyelink = 1;
 ptIdx = [{'004', '005', '006', '007', '008', '009','0010','0011',...
     '0012', '014', '015', '016', '017', '018'}];
 
+% ptIdx = [{'008', '009','0010','0011',...
+%     '0012', '014', '015', '016', '017', '018'}];
 %----- JOB SUBFUNCTIONS: Behaviour ---------------------------------------------
 
 if preprocess_behav
@@ -90,6 +94,10 @@ if concat_behav
     cd([base_path]);
     save(savePopFilename, 'concatData');
 
+    csv_filename = 'population_behav.xlsx';
+
+    writetable(concatData, csv_filename, 'WriteVariableNames', true);
+
 end
 
 if plot_popBehav
@@ -113,7 +121,9 @@ for isubject = 1: length(ptIdx)
     if ~exist([base_path ptIdx{isubject} '\processed_data\'])
         mkdir([base_path ptIdx{isubject} '\processed_data\']);
     end
-   
+
+    close all hidden
+
     for iblock = 1:4
 
         % include line to account for the fact not all participants possess
@@ -142,6 +152,37 @@ for isubject = 1: length(ptIdx)
     end
 end
 end
+
+if plot_eyelinkData
+
+    for isubject = 1: length(ptIdx)
+
+    cd([base_path ptIdx{isubject} '\processed_data\']);
+    close all hidden
+        for iblock = 1:4
+    
+            loadFilename = ['P' ptIdx{isubject} 'BLK' num2str(iblock) '_extracted.mat'];
+            behavFilename = ['fullSession_' num2str(ptIdx{isubject}) '.mat'];
+
+                if ~exist(loadFilename)
+                    continue;
+                else 
+                    load(loadFilename);
+                    load(behavFilename);
+
+                    plot_eyeData(trl, allData, iblock);
+                    
+                end
+    
+        end
+            if exist(loadFilename)
+                    figSavename = ['normPupilDiam_riskyAvTrials_pt' num2str(ptIdx{isubject})];
+                    print(figSavename, '-dpng');
+            end
+        
+    end
+end
+
 
 
 
