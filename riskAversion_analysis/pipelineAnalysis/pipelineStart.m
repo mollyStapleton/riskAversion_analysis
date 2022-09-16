@@ -19,22 +19,27 @@ preprocess_behav   = 0;    %takes individual participants data and produces a ma
                         %analysis replicated from Moeller et al., 2021
 
 
-concat_behav    = 0;    %concatenates each individual participant matrix into a single matrix for population analyses
-plot_popBehav   = 0;    %plots average and SEM of behaviour across all subjects 
+concat_behav        = 0;    %concatenates each individual participant matrix into a single matrix for population analyses
+plot_popBehav       = 0;    %plots average and SEM of behaviour across all subjects 
 
-process_eyelink = 1;
+process_eyelink     = 0;
 
 plot_eyelinkData    = 0;
+concact_allData     = 1;
+plot_popEye         = 0;
 
 %-----------------------------------------------------------------------
 
 % 004, 0010, 0011, 0012: only behaviour data 
-
+% 
 ptIdx = [{'004', '005', '006', '007', '008', '009','0010','0011',...
     '0012', '014', '015', '016', '017', '018'}];
+% 
+% ptIdx = {'017'};
 
 % ptIdx = [{'008', '009','0010','0011',...
 %     '0012', '014', '015', '016', '017', '018'}];
+
 %----- JOB SUBFUNCTIONS: Behaviour ---------------------------------------------
 
 if preprocess_behav
@@ -53,6 +58,9 @@ for isubject = 1: length(ptIdx)
     if exist(saveDataFilename)
 
          [allData] = preprocess_behavData(ptIdx{isubject});
+%          noRespIdx = ([allData.RT] == 0);
+%          allData(noRespIdx, :) = [];
+
          save(saveDataFilename, 'allData');
 
     else 
@@ -73,8 +81,10 @@ end
 
 if concat_behav
    concatData = [];
+
     for isubject = 1: length(ptIdx)
     
+        noRespIdx = [];
         cd([base_path ptIdx{isubject} '\']);
         if ~exist([base_path ptIdx{isubject} '\processed_data\'])
             mkdir([base_path ptIdx{isubject} '\processed_data\']);
@@ -85,6 +95,8 @@ if concat_behav
         dataFilename = ['fullSession_' ptIdx{isubject} '.mat'];
         load(dataFilename);
         
+        noRespIdx = ([allData.RT] == 0);
+        allData(noRespIdx, :) = [];
         concatData = [concatData; allData];
         
     end
@@ -159,30 +171,66 @@ if plot_eyelinkData
 
     cd([base_path ptIdx{isubject} '\processed_data\']);
     close all hidden
-        for iblock = 1:4
-    
-            loadFilename = ['P' ptIdx{isubject} 'BLK' num2str(iblock) '_extracted.mat'];
-            behavFilename = ['fullSession_' num2str(ptIdx{isubject}) '.mat'];
 
-                if ~exist(loadFilename)
-                    continue;
-                else 
-                    load(loadFilename);
-                    load(behavFilename);
+    check_if_eye = ['P' ptIdx{isubject} 'BLK1_extracted.mat'];
 
-                    plot_eyeData(trl, allData, iblock);
-                    
-                end
-    
+    if exist(check_if_eye)
+
+        if ~exist([base_path ptIdx{isubject} '\processed_norm_eyedata\'])
+            mkdir([base_path ptIdx{isubject} '\processed_norm_eyedata\']);
         end
-            if exist(loadFilename)
-                    figSavename = ['normPupilDiam_riskyAvTrials_pt' num2str(ptIdx{isubject})];
-                    print(figSavename, '-dpng');
+    
+            for iblock = 1:4
+        
+                loadFilename = ['P' ptIdx{isubject} 'BLK' num2str(iblock) '_extracted.mat'];
+                behavFilename = ['fullSession_' num2str(ptIdx{isubject}) '.mat'];
+    
+                    if ~exist(loadFilename)
+                        continue;
+                    else 
+                        load(loadFilename);
+                        load(behavFilename);
+    
+                        [normStim, normResp] = plot_eyeData(trl, allData, iblock);
+    
+                        cd([base_path ptIdx{isubject} '\processed_norm_eyedata\']);
+    
+                        structSaveName_stim = ['P' ptIdx{isubject} 'BLK' num2str(iblock) 'norm_stimEye.mat'];
+                        structSaveName_resp = ['P' ptIdx{isubject} 'BLK' num2str(iblock) 'norm_respEye.mat'];
+    
+                        save(structSaveName_stim, 'normStim');
+                        save(structSaveName_resp, 'normResp');
+                           
+                    end
             end
+                if exist(loadFilename)
+                        figSavename = ['normPupilDiam_riskyAvTrials_pt' num2str(ptIdx{isubject})];
+                        print(figSavename, '-dpng');
+                end
+    else 
+        continue;
+    end
         
     end
 end
 
+if concact_allData 
+
+    [pop_normPupil] = concatenate_eyeData(ptIdx, base_path);
+    cd([base_path]);
+    savePopname = ['population_normEyeData.mat'];
+    save(savePopname, 'pop_normPupil');
+
+end
+
+if plot_popEye
+
+    cd([base_path]);
+    loadPopname = ['population_normEyeData.mat'];
+    load(loadPopname);
+    plot_populationEyeData(pop_normPupil, 1);
+
+end
 
 
 

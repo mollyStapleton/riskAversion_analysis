@@ -1,8 +1,12 @@
-function plot_eyeData(dataIn_eye, dataIn_behav, blockNum)
+function [normStim, normResp] = plot_eyeData(dataIn_eye, dataIn_behav, blockNum)
 
 %     subplot(2, 2, blockNum);
-    idx = find(dataIn_behav.blockNumber == blockNum);
-    behav2use = dataIn_behav(idx, :);
+idx = find(dataIn_behav.blockNumber == blockNum);
+behav2use = dataIn_behav(idx, :);
+
+% noRespIdx = behav2use.RT==0;
+% behav2use(noRespIdx, :) = [];
+
     if blockNum == 1 
         hs = axes('position', [0.1 0.6 0.15 0.35]);
         hr = axes('position', [0.3 0.6 0.15 0.35]);
@@ -20,7 +24,8 @@ function plot_eyeData(dataIn_eye, dataIn_behav, blockNum)
 
     %identify condition
     for icnd = 1:3
-    
+   
+        respMade = [];
         if icnd == 1 
             col2plot = 'k';
         elseif icnd == 2 
@@ -30,18 +35,29 @@ function plot_eyeData(dataIn_eye, dataIn_behav, blockNum)
         end
 
         cndIdx = find(behav2use.cnd_idx == icnd);
+        trials2use = behav2use.trialNum(cndIdx);
 
-          trials2use = behav2use.trialNum(cndIdx);
+        % initialise structures for eye data 
+
+        stim.aligned_pupil{icnd} = NaN(length(trials2use), 1501);
+        stim.aligned_timeVec{icnd} = NaN(length(trials2use), 1501);
+        stim.preResp_pupil{icnd} = NaN(length(trials2use), 501);
+        stim.prtileResp_pupil{icnd} = NaN(length(trials2use), 1);
+        stim.derivative{icnd} =  NaN(length(trials2use), 1501);
+
+        resp.aligned_pupil{icnd} = NaN(length(trials2use), 4101);
+        resp.aligned_timeVec{icnd} = NaN(length(trials2use), 4101);
+        resp.preResp_pupil{icnd} = NaN(length(trials2use), 501);
+        resp.prtileResp_pupil{icnd} = NaN(length(trials2use), 1);
+        resp.derivative{icnd} =  NaN(length(trials2use), 4101);
 
             for itrial = 1: length(trials2use)
         
                    data2use   = dataIn_eye(trials2use(itrial)).data;
                    
-                   %plot pupil diameter over course of a trial with indices for
-                   %relevant task epochs
-        
                    %single event when button is pressed indicating choice
                    respIdx = find([data2use(:, 6)] == 25);
+
                    if ~isempty(respIdx) %only look at trials where a response was made 
                        %first timestamp for stim on min time
                        stimOnMinIdx = find([data2use(:, 6) == 14], 1);
@@ -57,10 +73,10 @@ function plot_eyeData(dataIn_eye, dataIn_behav, blockNum)
                        stim.aligned_pupil{icnd}(itrial, :)   = normPupil{itrial}(stimOnMinIdx(1) - 500: stimOnMinIdx(1) + 1000);
 
                        % look at 500ms prior to response time 
-                       stim.preResp_pupil{icnd}(itrial, :) = normPupil{itrial}(stimOnMinIdx(1)+500: stimOnMinIdx(1));
+                       stim.preResp_pupil{icnd}(itrial, :) = normPupil{itrial}(stimOnMinIdx(1): stimOnMinIdx(1)+500);
                        % calc 95th percentile 
                        stim.prtileResp_pupil{icnd}(itrial) = prctile(stim.preResp_pupil{icnd}(itrial, :), 95);
-
+                       stim.derivative{icnd}(itrial, :) = data2use((stimOnMinIdx(1) - 500: stimOnMinIdx(1) + 1000), 5);
                        
                        %RESPONSE DATA 
                        timeVec_resp{itrial} =  data2use(:, 4) - data2use(respIdx(1), 4);
@@ -72,6 +88,7 @@ function plot_eyeData(dataIn_eye, dataIn_behav, blockNum)
                        resp.preResp_pupil{icnd}(itrial, :) = normPupil{itrial}(respIdx(1) -500: respIdx(1));
                        % calc 95th percentile 
                        resp.prtileResp_pupil{icnd}(itrial) = prctile(resp.preResp_pupil{icnd}(itrial, :), 95);
+                       resp.derivative{icnd}(itrial, :) = data2use((respIdx(1) - 1000:respIdx(1)+3100), 5);
 
                    end
   
@@ -82,8 +99,8 @@ function plot_eyeData(dataIn_eye, dataIn_behav, blockNum)
             %%% plot pupil aligned to stimulus onset 
             axes(hs);
             hold on
-            stim_mean_pupil{icnd} = mean(stim.aligned_pupil{icnd});
-            stim_sem_pupil{icnd}  = std(stim.aligned_pupil{icnd})./sqrt(length(stim.aligned_pupil{icnd}));
+            stim_mean_pupil{icnd} = nanmean(stim.aligned_pupil{icnd});
+            stim_sem_pupil{icnd}  = nanstd(stim.aligned_pupil{icnd})./sqrt(length(stim.aligned_pupil{icnd}));
             
             plot(stim.aligned_timeVec{icnd}(end, :), stim_mean_pupil{icnd}, 'color', col2plot, 'linew', 1.2);
             hold on
@@ -96,8 +113,8 @@ function plot_eyeData(dataIn_eye, dataIn_behav, blockNum)
             %%% plot pupil aligned to response
             axes(hr);
             hold on
-            resp_mean_pupil{icnd} = mean(resp.aligned_pupil{icnd});
-            resp_sem_pupil{icnd}  = std(resp.aligned_pupil{icnd})./sqrt(length(resp.aligned_pupil{icnd}));
+            resp_mean_pupil{icnd} = nanmean(resp.aligned_pupil{icnd});
+            resp_sem_pupil{icnd}  = nanstd(resp.aligned_pupil{icnd})./sqrt(length(resp.aligned_pupil{icnd}));
             
             plot(resp.aligned_timeVec{icnd}(end, :), resp_mean_pupil{icnd}, 'color', col2plot, 'linew', 1.2);
             hold on
@@ -108,8 +125,8 @@ function plot_eyeData(dataIn_eye, dataIn_behav, blockNum)
           
     end
 
-    max_mean = max([cell2mat(resp_mean_pupil) cell2mat(stim_mean_pupil)]);
-    min_mean = min([cell2mat(resp_mean_pupil) cell2mat(stim_mean_pupil)]);
+    max_mean = nanmax([cell2mat(resp_mean_pupil) cell2mat(stim_mean_pupil)]);
+    min_mean = nanmin([cell2mat(resp_mean_pupil) cell2mat(stim_mean_pupil)]);
 
 
         figure(1);
@@ -146,5 +163,8 @@ function plot_eyeData(dataIn_eye, dataIn_behav, blockNum)
         xlabel('\bfTime from Response Onset (ms)');
         title('\fontsize{12}Response Aligned');
 %         ylabel({'\bfPupil Response', '(% Signal Change)'});
+
+        normStim = stim;
+        normResp = resp;
 
 end
