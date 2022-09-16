@@ -1,4 +1,4 @@
-function [dataOut] = concatenate_eyeData(ptIdx, base_path)
+function [dataOut] = concatenate_eyeData(ptIdx, base_path, generate_xlsx_full)
 
 dataOut  = [];
 

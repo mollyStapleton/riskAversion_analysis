@@ -6,7 +6,7 @@
 clear all 
 close all 
 
-base_path = ['C:\Users\jf22662\OneDrive - University of Bristol\Documents\GitHub\riskAversion_analysis\riskAversion_analysis\data\'];
+base_path = ['C:\Users\jf22662\OneDrive - University of Bristol\Documents\GitHub\data\'];
 cd(base_path);
 
 %---------------------------------
@@ -24,8 +24,8 @@ plot_popBehav       = 0;    %plots average and SEM of behaviour across all subje
 
 process_eyelink     = 0;
 
-plot_eyelinkData    = 0;
-concact_allData     = 1;
+plot_eyelinkData    = 1;
+concact_allData     = 0;
 plot_popEye         = 0;
 
 %-----------------------------------------------------------------------
@@ -166,57 +166,79 @@ end
 end
 
 if plot_eyelinkData
-
-    for isubject = 1: length(ptIdx)
-
-    cd([base_path ptIdx{isubject} '\processed_data\']);
-    close all hidden
-
-    check_if_eye = ['P' ptIdx{isubject} 'BLK1_extracted.mat'];
-
-    if exist(check_if_eye)
-
-        if ~exist([base_path ptIdx{isubject} '\processed_norm_eyedata\'])
-            mkdir([base_path ptIdx{isubject} '\processed_norm_eyedata\']);
-        end
-    
-            for iblock = 1:4
+    fullMatrix = [];
+%     tmpBlock = [];
+        for isubject = 1: length(ptIdx)
+        tmpBlock = [];
+            cd([base_path ptIdx{isubject} '\processed_data\']);
+            close all hidden
         
-                loadFilename = ['P' ptIdx{isubject} 'BLK' num2str(iblock) '_extracted.mat'];
-                behavFilename = ['fullSession_' num2str(ptIdx{isubject}) '.mat'];
+            check_if_eye = ['P' ptIdx{isubject} 'BLK1_extracted.mat'];
+
+        if exist(check_if_eye)
     
-                    if ~exist(loadFilename)
-                        continue;
-                    else 
-                        load(loadFilename);
-                        load(behavFilename);
-    
-                        [normStim, normResp] = plot_eyeData(trl, allData, iblock);
-    
-                        cd([base_path ptIdx{isubject} '\processed_norm_eyedata\']);
-    
-                        structSaveName_stim = ['P' ptIdx{isubject} 'BLK' num2str(iblock) 'norm_stimEye.mat'];
-                        structSaveName_resp = ['P' ptIdx{isubject} 'BLK' num2str(iblock) 'norm_respEye.mat'];
-    
-                        save(structSaveName_stim, 'normStim');
-                        save(structSaveName_resp, 'normResp');
-                           
-                    end
+            if ~exist([base_path ptIdx{isubject} '\processed_norm_eyedata\'])
+                mkdir([base_path ptIdx{isubject} '\processed_norm_eyedata\']);
             end
-                if exist(loadFilename)
-                        figSavename = ['normPupilDiam_riskyAvTrials_pt' num2str(ptIdx{isubject})];
-                        print(figSavename, '-dpng');
-                end
-    else 
-        continue;
-    end
+                  
+            for iblock = 1:4
+
+                    cd([base_path ptIdx{isubject} '\processed_data\']);
+                    loadFilename = ['P' ptIdx{isubject} 'BLK' num2str(iblock) '_extracted.mat'];
+                    behavFilename = ['fullSession_' num2str(ptIdx{isubject}) '.mat'];
         
-    end
+                        if ~exist(loadFilename)
+                            continue;
+                        else 
+                            load(loadFilename);
+                            load(behavFilename);
+        
+                            [normStim, normResp, xlsx_full] = plot_eyeData(trl, allData, iblock, 1);
+    
+                            cd([base_path ptIdx{isubject} '\processed_norm_eyedata\']);
+        
+                            structSaveName_stim = ['P' ptIdx{isubject} 'BLK' num2str(iblock) 'norm_stimEye.mat'];
+                            structSaveName_resp = ['P' ptIdx{isubject} 'BLK' num2str(iblock) 'norm_respEye.mat'];
+        
+                            save(structSaveName_stim, 'normStim');
+                            save(structSaveName_resp, 'normResp');
+
+                        end
+
+            if ~isempty(xlsx_full)
+        
+                tmpBlock = [tmpBlock; xlsx_full];
+        
+            end
+            end
+
+            if exist(loadFilename)
+                figSavename = ['normPupilDiam_riskyAvTrials_pt' num2str(ptIdx{isubject})];
+                print(figSavename, '-dpng');
+            end
+        else 
+            continue;
+        end
+        
+        if ~isempty(xlsx_full)
+         
+            fullMatrix = [fullMatrix; tmpBlock];
+        end
+
+        end
+
+        if ~isempty(fullMatrix)
+            cd([base_path]);
+            csv_filename = 'population_behav_phasicArousal.xlsx';
+            writetable(fullMatrix, csv_filename, 'WriteVariableNames', true);
+        end
+
+
 end
 
 if concact_allData 
 
-    [pop_normPupil] = concatenate_eyeData(ptIdx, base_path);
+    [pop_normPupil] = concatenate_eyeData(ptIdx, base_path, 1);
     cd([base_path]);
     savePopname = ['population_normEyeData.mat'];
     save(savePopname, 'pop_normPupil');

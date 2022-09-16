@@ -1,9 +1,8 @@
-function [normStim, normResp, xlsx_full] = plot_eyeData(dataIn_eye, dataIn_behav, blockNum, generate_xlsx_full)
+function [normStim, normResp] = plot_eyeData(dataIn_eye, dataIn_behav, blockNum)
 
 %     subplot(2, 2, blockNum);
 idx = find(dataIn_behav.blockNumber == blockNum);
 behav2use = dataIn_behav(idx, :);
-xlsx_full = [];
 
 % noRespIdx = behav2use.RT==0;
 % behav2use(noRespIdx, :) = [];
@@ -91,11 +90,7 @@ xlsx_full = [];
                        resp.prtileResp_pupil{icnd}(itrial) = prctile(resp.preResp_pupil{icnd}(itrial, :), 95);
                        resp.derivative{icnd}(itrial, :) = data2use((respIdx(1) - 1000:respIdx(1)+3100), 5);
 
-                       if generate_xlsx_full 
-                           behav2use.stimPhasic(trials2use(itrial)) = stim.prtileResp_pupil{icnd}(itrial);
-                           behav2use.respPhasic(trials2use(itrial)) = resp.prtileResp_pupil{icnd}(itrial);
-                       end
-
+                       behav2use.stimPhasic(trials2use(itrial)) = stim.prtileResp_pupil{icnd}(itrial);
 
                    end
   
@@ -108,10 +103,10 @@ xlsx_full = [];
             hold on
             stim_mean_pupil{icnd} = nanmean(stim.aligned_pupil{icnd});
             stim_sem_pupil{icnd}  = nanstd(stim.aligned_pupil{icnd})./sqrt(length(stim.aligned_pupil{icnd}));
-            stimVector = linspace(-0.4990, 0.9990, 1501);
-            plot(stimVector, stim_mean_pupil{icnd}, 'color', col2plot, 'linew', 1.2);
+            
+            plot(stim.aligned_timeVec{icnd}(end, :), stim_mean_pupil{icnd}, 'color', col2plot, 'linew', 1.2);
             hold on
-            x2plot = [stimVector fliplr(stimVector)];
+            x2plot = [stim.aligned_timeVec{icnd}(end, :) fliplr(stim.aligned_timeVec{icnd}(end, :))];
             error2plot = [stim_mean_pupil{icnd} + stim_sem_pupil{icnd} fliplr([stim_mean_pupil{icnd} - stim_sem_pupil{icnd}])];
             fill(x2plot, error2plot, col2plot, 'linestyle', 'none');
             alpha(0.25);
@@ -122,10 +117,10 @@ xlsx_full = [];
             hold on
             resp_mean_pupil{icnd} = nanmean(resp.aligned_pupil{icnd});
             resp_sem_pupil{icnd}  = nanstd(resp.aligned_pupil{icnd})./sqrt(length(resp.aligned_pupil{icnd}));
-            respVector = linspace(-0.9980, 3.0960, 4101);
-            plot(respVector, resp_mean_pupil{icnd}, 'color', col2plot, 'linew', 1.2);
+            
+            plot(resp.aligned_timeVec{icnd}(end, :), resp_mean_pupil{icnd}, 'color', col2plot, 'linew', 1.2);
             hold on
-            x2plot = [respVector fliplr(respVector)];
+            x2plot = [resp.aligned_timeVec{icnd}(end, :) fliplr(resp.aligned_timeVec{icnd}(end, :))];
             error2plot = [resp_mean_pupil{icnd} + resp_sem_pupil{icnd} fliplr([resp_mean_pupil{icnd} - resp_sem_pupil{icnd}])];
             fill(x2plot, error2plot, col2plot, 'linestyle', 'none');
             alpha(0.25);
@@ -173,12 +168,5 @@ xlsx_full = [];
 
         normStim = stim;
         normResp = resp;
-        
-        if generate_xlsx_full 
-            
-            xlsx_full = [xlsx_full; behav2use];
-        end
-
-
 
 end
