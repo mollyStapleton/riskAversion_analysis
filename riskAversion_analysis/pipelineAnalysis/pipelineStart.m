@@ -13,7 +13,7 @@ cd(base_path);
 % SELECT JOB TO RUN 
 %--------------------------------------------
 
-preprocess_behav   = 0;    %takes individual participants data and produces a matrix of all relevant information for analysis. 
+preprocess_behav    = 0;    %takes individual participants data and produces a matrix of all relevant information for analysis. 
                         %saves this data within each participants folder 
                         %produces and saves a figure of behaviour overview 
                         %analysis replicated from Moeller et al., 2021
@@ -22,11 +22,15 @@ preprocess_behav   = 0;    %takes individual participants data and produces a ma
 concat_behav        = 0;    %concatenates each individual participant matrix into a single matrix for population analyses
 plot_popBehav       = 0;    %plots average and SEM of behaviour across all subjects 
 
-process_eyelink     = 0;
+process_eyelink     = 0;    %raw eye data --> normalised pupil, derivative computed and stored,
+                            %for all task encodes
 
-plot_eyelinkData    = 1;
-concact_allData     = 0;
-plot_popEye         = 0;
+plot_eyelinkData    = 1;    %stimulus and response aligned % signal change, derivative and 95th percentile computed and stored
+                            
+concact_allData     = 0;    %aligned behavioural and pupil data
+plot_popEye         = 0;    %plots for population eye data, different plots can be generated, 
+                            %see description for plot_populationEyeData.m
+                            %function
 
 %-----------------------------------------------------------------------
 
@@ -34,11 +38,7 @@ plot_popEye         = 0;
 % 
 ptIdx = [{'004', '005', '006', '007', '008', '009','0010','0011',...
     '0012', '014', '015', '016', '017', '018'}];
-% 
-% ptIdx = {'017'};
 
-% ptIdx = [{'008', '009','0010','0011',...
-%     '0012', '014', '015', '016', '017', '018'}];
 
 %----- JOB SUBFUNCTIONS: Behaviour ---------------------------------------------
 
@@ -79,6 +79,8 @@ for isubject = 1: length(ptIdx)
 end
 end
 
+%----------------------------------------------------------------------------
+
 if concat_behav
    concatData = [];
 
@@ -111,6 +113,8 @@ if concat_behav
     writetable(concatData, csv_filename, 'WriteVariableNames', true);
 
 end
+
+%-------------------------------------------------------------------------
 
 if plot_popBehav
 
@@ -165,76 +169,13 @@ for isubject = 1: length(ptIdx)
 end
 end
 
+%------------------------------------------------------------------------------
+
 if plot_eyelinkData
-    fullMatrix = [];
-%     tmpBlock = [];
-        for isubject = 1: length(ptIdx)
-        tmpBlock = [];
-            cd([base_path ptIdx{isubject} '\processed_data\']);
-            close all hidden
-        
-            check_if_eye = ['P' ptIdx{isubject} 'BLK1_extracted.mat'];
-
-        if exist(check_if_eye)
-    
-            if ~exist([base_path ptIdx{isubject} '\processed_norm_eyedata\'])
-                mkdir([base_path ptIdx{isubject} '\processed_norm_eyedata\']);
-            end
-                  
-            for iblock = 1:4
-
-                    cd([base_path ptIdx{isubject} '\processed_data\']);
-                    loadFilename = ['P' ptIdx{isubject} 'BLK' num2str(iblock) '_extracted.mat'];
-                    behavFilename = ['fullSession_' num2str(ptIdx{isubject}) '.mat'];
-        
-                        if ~exist(loadFilename)
-                            continue;
-                        else 
-                            load(loadFilename);
-                            load(behavFilename);
-        
-                            [normStim, normResp, xlsx_full] = plot_eyeData(trl, allData, iblock, 1);
-    
-                            cd([base_path ptIdx{isubject} '\processed_norm_eyedata\']);
-        
-                            structSaveName_stim = ['P' ptIdx{isubject} 'BLK' num2str(iblock) 'norm_stimEye.mat'];
-                            structSaveName_resp = ['P' ptIdx{isubject} 'BLK' num2str(iblock) 'norm_respEye.mat'];
-        
-                            save(structSaveName_stim, 'normStim');
-                            save(structSaveName_resp, 'normResp');
-
-                        end
-
-            if ~isempty(xlsx_full)
-        
-                tmpBlock = [tmpBlock; xlsx_full];
-        
-            end
-            end
-
-            if exist(loadFilename)
-                figSavename = ['normPupilDiam_riskyAvTrials_pt' num2str(ptIdx{isubject})];
-                print(figSavename, '-dpng');
-            end
-        else 
-            continue;
-        end
-        
-        if ~isempty(xlsx_full)
-         
-            fullMatrix = [fullMatrix; tmpBlock];
-        end
-
-        end
-
-        if ~isempty(fullMatrix)
-            cd([base_path]);
-            csv_filename = 'population_behav_phasicArousal.xlsx';
-            writetable(fullMatrix, csv_filename, 'WriteVariableNames', true);
-        end
-
-
+        plot_eyeData_admin;
 end
+
+%-------------------------------------------------------------------------------
 
 if concact_allData 
 
@@ -244,6 +185,8 @@ if concact_allData
     save(savePopname, 'pop_normPupil');
 
 end
+
+%-------------------------------------------------------------------------------
 
 if plot_popEye
 
