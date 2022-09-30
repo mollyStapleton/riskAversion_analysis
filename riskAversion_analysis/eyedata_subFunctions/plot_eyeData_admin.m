@@ -25,7 +25,8 @@ for isubject = 1: length(ptIdx)
                             load(behavFilename);
         
                             %%%%% EYE DATA PLOTTING FUNCTION 
-                            [normStim, normResp, xlsx_full] = plot_eyeData(trl, allData, iblock, 1);
+%                             [normStim, normResp, xlsx_full] = plot_eyeData(trl, allData, iblock, 1);
+                              plot_eye_deriv_fullTrial(trl, allData, iblock);
     
                             cd([base_path ptIdx{isubject} '\processed_norm_eyedata\']);
         
@@ -36,12 +37,12 @@ for isubject = 1: length(ptIdx)
                             save(structSaveName_resp, 'normResp');
 
                         end
-
-            if ~isempty(xlsx_full)
-        
-                tmpBlock = [tmpBlock; xlsx_full];
-        
-            end
+% 
+%             if ~isempty(xlsx_full)
+%         
+%                 tmpBlock = [tmpBlock; xlsx_full];
+%         
+%             end
             end
 
             if exist(loadFilename)
@@ -51,16 +52,16 @@ for isubject = 1: length(ptIdx)
         else 
             continue;
         end
-        
-        if ~isempty(xlsx_full)
-         
-            fullMatrix = [fullMatrix; tmpBlock];
-        end
+%         
+%         if ~isempty(xlsx_full)
+%          
+%             fullMatrix = [fullMatrix; tmpBlock];
+%         end
 
         end
 
-        if ~isempty(fullMatrix)
-            cd([base_path]);
-            csv_filename = 'population_behav_phasicArousal.xlsx';
-            writetable(fullMatrix, csv_filename, 'WriteVariableNames', true);
-        end
+%         if ~isempty(fullMatrix)
+%             cd([base_path]);
+%             csv_filename = 'population_behav_phasicArousal.xlsx';
+%             writetable(fullMatrix, csv_filename, 'WriteVariableNames', true);
+%         end

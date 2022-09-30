@@ -36,9 +36,10 @@ plot_popEye         = 0;    %plots for population eye data, different plots can 
 
 % 004, 0010, 0011, 0012: only behaviour data 
 % 
-ptIdx = [{'004', '005', '006', '007', '008', '009','0010','0011',...
-    '0012', '014', '015', '016', '017', '018'}];
+% ptIdx = [{'004', '005', '006', '007', '008', '009','0010','0011',...
+%     '0012', '014', '015', '016', '017', '018'}];
 
+ptIdx = {'006'};
 
 %----- JOB SUBFUNCTIONS: Behaviour ---------------------------------------------
 
@@ -138,10 +139,11 @@ for isubject = 1: length(ptIdx)
         mkdir([base_path ptIdx{isubject} '\processed_data\']);
     end
 
-    close all hidden
+%     close all hidden
 
     for iblock = 1:4
-
+        close all hidden
+%         figure(iblock)
         % include line to account for the fact not all participants possess
         % eye data 
         cd([base_path ptIdx{isubject}]);
@@ -193,7 +195,7 @@ if plot_popEye
     cd([base_path]);
     loadPopname = ['population_normEyeData.mat'];
     load(loadPopname);
-    plot_populationEyeData(pop_normPupil, 1);
+    plot_populationEyeData(pop_normPupil, 2);
 
 end
 

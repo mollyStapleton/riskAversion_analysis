@@ -62,8 +62,8 @@ function plot_eyeData_cnd_blk_grouped(dataIn)
                 %%% plot pupil aligned to stimulus onset
                 axes(hs);
                 hold on
-                stim_mean_pupil{iblock, itype}{icnd} = mean( allPupil_stim{iblock, itype}{icnd});
-                stim_sem_pupil{iblock, itype}{icnd}  = std( allPupil_stim{iblock, itype}{icnd})./sqrt(length(allPupil_stim{iblock, itype}{icnd}));
+                stim_mean_pupil{iblock, itype}{icnd} = nanmean( allPupil_stim{iblock, itype}{icnd});
+                stim_sem_pupil{iblock, itype}{icnd}  = nanstd( allPupil_stim{iblock, itype}{icnd})./sqrt(length(allPupil_stim{iblock, itype}{icnd}));
     
                 stim_timeVec = linspace(-0.5, 1, 1501);
                 plot(stim_timeVec, stim_mean_pupil{iblock, itype}{icnd}, 'color', col2plot, 'lineStyle', lin2plot, 'linew', 1.2);
@@ -78,8 +78,8 @@ function plot_eyeData_cnd_blk_grouped(dataIn)
                 %%% plot pupil aligned to response
                 axes(hr);
                 hold on
-                resp_mean_pupil{iblock, itype}{icnd} = mean(allPupil_resp{iblock, itype}{icnd});
-                resp_sem_pupil{iblock, itype}{icnd}  = std(allPupil_resp{iblock, itype}{icnd})./sqrt(length(allPupil_resp{iblock, itype}{icnd}));
+                resp_mean_pupil{iblock, itype}{icnd} = nanmean(allPupil_resp{iblock, itype}{icnd});
+                resp_sem_pupil{iblock, itype}{icnd}  = nanstd(allPupil_resp{iblock, itype}{icnd})./sqrt(length(allPupil_resp{iblock, itype}{icnd}));
     
                 resp_timeVec = linspace(-1, 3.1, 4101);
                 plot(resp_timeVec, resp_mean_pupil{iblock, itype}{icnd}, 'color', col2plot, 'LineStyle', lin2plot, 'linew', 1.2);
@@ -93,14 +93,14 @@ function plot_eyeData_cnd_blk_grouped(dataIn)
                 
             end
     
-            max_type_stim(itype)= max(max(cell2mat(stim_mean_pupil{iblock, itype}))); 
-            max_type_resp(itype)= max(max(cell2mat(resp_mean_pupil{iblock, itype}))); 
-            min_type_stim(itype)= min(min(cell2mat(stim_mean_pupil{iblock, itype}))); 
-            min_type_resp(itype)= min(min(cell2mat(resp_mean_pupil{iblock, itype}))); 
+            max_type_stim(itype)= nanmax(nanmax(cell2mat(stim_mean_pupil{iblock, itype}))); 
+            max_type_resp(itype)= nanmax(nanmax(cell2mat(resp_mean_pupil{iblock, itype}))); 
+            min_type_stim(itype)= nanmin(nanmin(cell2mat(stim_mean_pupil{iblock, itype}))); 
+            min_type_resp(itype)= nanmin(nanmin(cell2mat(resp_mean_pupil{iblock, itype}))); 
         end
     
-        max_mean = max([max_type_stim max_type_resp]);
-        min_mean = min([min_type_stim min_type_resp]);
+        max_mean = nanmax([max_type_stim max_type_resp]);
+        min_mean = nanmin([min_type_stim min_type_resp]);
     
         figure(1);
     %     set(gcf, 'Units', 'centimeters');

@@ -1,7 +1,5 @@
 function [trl] = riskAversion_trialfun(event)
 
-
-
 value   = {event(find(~cellfun(@isempty,strfind({event.value},'MSG')))).value};
 sample  = [event(find(~cellfun(@isempty,strfind({event.value},'MSG')))).sample];
 
@@ -44,6 +42,7 @@ for itrial = 1: length(tstart_sample)
         end
 
     end
+    
     
     trl = [trl newTrl];
 
