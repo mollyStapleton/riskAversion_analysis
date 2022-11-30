@@ -11,10 +11,8 @@ for isubject = 1: length(ptIdx)
 
     fullSession = [];
 
-      if exist([base_path ptIdx{isubject} '\processed_norm_eyedata\'])
-          
-        cd([base_path ptIdx{isubject} '\processed_norm_eyedata\'])
-        close all hidden
+      if exist([base_path ptIdx{isubject} '\processed_norm_eyedata\'])  %checking if eye data was recorded
+         close all hidden
         
 
         for iblock = 1:4

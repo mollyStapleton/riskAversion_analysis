@@ -15,6 +15,8 @@ for iblock = 1:4
     tmpData.blockNumber         = dataOut.blockNum';
     tmpData.trialNum            = dataOut.trialNum';
     tmpData.distType            = dataOut.distType';
+    tmpData.stim_l              = dataOut.stim_left';
+    tmpData.stim_r              = dataOut.stim_right';
     tmpData.chosen_dir          = dataOut.choice';
 
     for itrial = 1: length(dataOut.choice)
@@ -25,7 +27,7 @@ for iblock = 1:4
 
                 tmpData.stimulus_choice(itrial) = dataOut.stim_right(itrial);
 
-            elseif (dataOut.choice(itrial) == 2) % RIGHT
+            elseif (dataOut.choice(itrial) == 2) % LEFT
 
                 tmpData.stimulus_choice(itrial) = dataOut.stim_left(itrial);
 

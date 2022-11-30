@@ -42,8 +42,7 @@ function [trl] = preprocess_eyelink(base_path, ptIdx, blockNum)
         pupil = resample(newpupil, 50, 1000)';
         % timestamps now match those of data.times, so that can be
         % appropriately aligned to pupil samples
-%         dwnTime  = (0:(length(pupil)-1))./500;
-        dwnTime = resample(data.times, 50, 1000)';
+        dwnTime  = (0:(length(pupil)-1))./500;
 
 % 
 %       % (iii) filtering of data
@@ -120,7 +119,7 @@ function [trl] = preprocess_eyelink(base_path, ptIdx, blockNum)
                         end
     
                     % percentage change pupil series 
-                    tmpData(:, 4) = zmean_pupil(trl(itrial).encodes(icodes, 2): (trl(itrial).encodes(icodes+1, 2)-encodeAmend));
+                    tmpData(:, 4) = mean_comp_pupil(trl(itrial).encodes(icodes, 2): (trl(itrial).encodes(icodes+1, 2)-encodeAmend));
                     % 1st derivative of pupil series 
                     tmpData(:, 5) = deriv_pupil(trl(itrial).encodes(icodes, 2): (trl(itrial).encodes(icodes+1, 2)-encodeAmend));
 

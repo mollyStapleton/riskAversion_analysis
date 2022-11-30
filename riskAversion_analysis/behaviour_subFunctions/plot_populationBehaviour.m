@@ -22,7 +22,15 @@ function plot_populationBehaviour(base_path, ptIdx, figSavename)
     high_choice_diff    = find(tmpDiffBlk.stimulus_choice == 3 | tmpDiffBlk.stimulus_choice ==4);
     prop_diff_high      = size(high_choice_diff, 1)./size(tmpDiffBlk, 1);
 
+    tmpAccuracy = [];
+    stats_table_accuracy = [];
+
+    tmpPref = [];
+    stats_table_pref = [];
+
     stats_table_binnedAccuracy = [];
+
+    tmpStats = [];
     stats_table_timeBinned_risk = [];
        
     for blockType = 1:2
@@ -56,11 +64,19 @@ function plot_populationBehaviour(base_path, ptIdx, figSavename)
         
                 prop_risk_high_blk{blockType}(isubject)   = length(high_high_blk)/sum(high_idx_blk==1);
                 prop_risk_low_blk{blockType}(isubject)    = length(high_low_blk)/sum(low_idx_blk==1);
+
+                prop_risky_all{blockType}(isubject)   = (length(high_high_blk) + length(high_low_blk))./ (sum(high_idx_blk==1) + sum(low_idx_blk==1));
     
                 axes(hb)
                 hold on 
                 plot(prop_risk_high_blk{blockType}(isubject), prop_risk_low_blk{blockType}(isubject), '.', 'color',...
                     col2plot, 'MarkerSize', 30);
+
+                diff_riskPref{blockType}(isubject) = prop_risk_high_blk{blockType}(isubject) - prop_risk_low_blk{blockType}(isubject);
+
+                tmpPref = [isubject, blockType, prop_risk_high_blk{blockType}(isubject),...
+                    prop_risk_low_blk{blockType}(isubject), diff_riskPref{blockType}(isubject)];
+                stats_table_pref = [stats_table_pref; tmpPref];
 
             for ibin = 1: length(bin)
     
@@ -86,8 +102,15 @@ function plot_populationBehaviour(base_path, ptIdx, figSavename)
                 prop_risk_high{blockType}(isubject, ibin)    = length(high_high)/sum(high_idx==1);
                 prop_risk_low{blockType}(isubject, ibin)     = length(high_low)/sum(low_idx==1);
 
+                
+
                 tmpStats = [isubject, blockType, ibin, prop_risk_high{blockType}(isubject, ibin), prop_risk_low{blockType}(isubject, ibin)];
                 stats_table_timeBinned_risk = [stats_table_timeBinned_risk; tmpStats];
+
+                tmpAccuracy = [isubject, blockType, ibin, prop_accuracy{blockType}(isubject, ibin)];
+                stats_table_accuracy = [stats_table_accuracy; tmpAccuracy];
+
+                
 
             end
         end
@@ -106,6 +129,9 @@ function plot_populationBehaviour(base_path, ptIdx, figSavename)
         mean_binned_low{blockType}     = mean(prop_risk_low{blockType});
         sem_binned_low{blockType}  = std(prop_risk_low{blockType})./sqrt(length(prop_risk_low{blockType}));
 
+        mean_risky_all{blockType} = mean(prop_risky_all{blockType}');
+        sem_risky_all{blockType}  = std(prop_risky_all{blockType}')./sqrt(length(prop_risky_all{blockType}'));
+
         ht = subplot(1, 3, 1) %choice accuracy - over trials
         errorbar(mean_binned_accuracy{blockType}, sem_binned_accuracy{blockType}, 'color', col2plot, 'linew', 1.5);
         hold on
@@ -113,16 +139,7 @@ function plot_populationBehaviour(base_path, ptIdx, figSavename)
         ylabel('P(High|Different)');
         title('Choice Accuracy');
 
-        % test sign from chance for participants performance
-        for ibin = 1:5
 
-            [h,p{blockType}(ibin), ~ ,stats{blockType}{ibin}] = ttest(prop_accuracy{blockType}(:, ibin));
-
-            tmpStats = [blockType stats{blockType}{ibin}.tstat, stats{blockType}{ibin}.df, p{blockType}(ibin)];
-
-            stats_table_binnedAccuracy = [stats_table_binnedAccuracy; tmpStats]
-           
-        end
         hh = subplot('Position', [0.7, 0.11, 0.125, 0.81]);
         errorbar(mean_binned_high{blockType}, sem_binned_high{blockType}, 'color', col2plot, 'linew', 1.5);
         hold on
@@ -134,41 +151,124 @@ function plot_populationBehaviour(base_path, ptIdx, figSavename)
         hold on
         alpha(0.25);
         xlabel('Trials (Binned)');
-        ylabel('P(Risky|Both-Low)');
-
-
-         % stats: participants more risk seeking for low or high means 
-        [~, p_risk(blockType), ~, stats_risk{blockType}] = ttest(prop_risk_high_blk{blockType}, prop_risk_low_blk{blockType});
-       
+        ylabel('P(Risky|Both-Low)');   
 
     end
 
-    table2export_1 = array2table(stats_table_binnedAccuracy, 'VariableNames', {'blockType', 'tStat', 'df', 'pValue'});
 
-    stat_accuracyComp = [];
-    %stats comparison between means for each distribution over time 
-    for ibin = 1:5
+    figure(2);
+    plot(prop_risky_all{1}, prop_risky_all{2}, 'k.', 'MarkerSize', 25);
+    hold on 
+    xlim([0 1]);
+    ylim([0 1]);
+    x2plot = linspace(0, 1);
+    y2plot = linspace(0, 1);
+    hold on
+    axis square
+    plot(x2plot, y2plot, 'k-');
+    plot([0.5 0.5], [0 1], 'k--');
+    plot([0 1], [0.5 0.5], 'k--');
+    xlabel('\bf \fontsize{14} \color{red} Gaussian Distribution');
+    ylabel('\bf \fontsize{14} \color{blue} Bimodal Distribution');
+    title({'\fontsize{16} P(Risky) across Both-High and Both-Low Conditions', 'Comparison between Distribution Types'});
+    set(gca, 'FontName', 'times');
+    [Hall,Pall,CIall,STATSall] = ttest2(prop_risky_all{1}, prop_risky_all{2});
+    saveFigname_1 = ['riskPreferences_distComp'];
+    print(saveFigname_1, '-dpng');
 
-        [~, p_type(ibin), ~, stats_type{ibin}] = ttest(prop_accuracy{1}(:, ibin), prop_accuracy{2}(:, ibin));
-        tmpStats = [stats_type{ibin}.tstat, stats_type{ibin}.df, p_type(ibin)];
-        stat_accuracyComp = [stat_accuracyComp; tmpStats]
+    %---------------------------------------------------------------------------------
+    % ANALYSIS(1): sign. difference in accuracy between gaussian and
+    % bimodal distribution?
+    %------------------------------------------------------------------------------------------
+    
+    table2export_2 = array2table(stats_table_accuracy, 'VariableNames', {'subIdx', 'distType', 'binNumber', 'accuracy'});
+    table2export_2.distType = categorical(table2export_2.distType);
+    accuracy_glme = fitglme(table2export_2, 'accuracy ~ distType * binNumber + (1|subIdx)', 'DummyVarCoding', 'Effects');
+    an_accuracy = anova(accuracy_glme);
+    C = dataset2cell(an_accuracy);
 
+    for no=2:size(C,1)
+        eta2p=(C{no,2}*C{no,3})/(C{no,2}*C{no,3}+C{no,4});
+        C{no,6}=eta2p;
+        
+    end
+    % perform multiple comparisons
+    % sign main effect of dist type and bin number, no sign interaction 
+    dist_type = [1 2];
+    bin_vec = [1 2 3 4 5];
+   
+    post_hoc_vec = []
+
+    for opj=1:length(bin_vec) %%%% number of dose groups
+
+        Lv1= table2export_2.accuracy(find(table2export_2.binNumber == bin_vec(opj)));
+        for pqr=opj+1:length(bin_vec)
+            Lv2 =  table2export_2.accuracy(find(table2export_2.binNumber == bin_vec(pqr)));
+            [hy,pt,~,stats]=ttest(Lv1,Lv2);  % ttest for pairwise comparison
+            post_hoc_table_dose{opj,pqr-1}=pt;
+            post_hoc_vec=[post_hoc_vec pt];
+        end
     end
 
-    table2export_2 = array2table(stat_accuracyComp, 'VariableNames', {'tStat', 'df', 'pValue'});
+    [pID,pN] = FDR(post_hoc_vec,0.05);
 
-    table2export_3 = array2table(stats_table_timeBinned_risk, 'VariableNames', {'subIdx',...
-        'distType', 'binNumber', 'risk_high', 'risk_low'});
+    [h, crit_p, ~, adj_p]=fdr_bh(post_hoc_vec,0.05);
 
-%     table2export_3.distType = categorical(table2export_3.distType);
-    high_glme = fitglme(table2export_3, 'risk_high ~ distType * binNumber + (1|subIdx)', 'DummyVarCoding', 'Effects');
-    low_glme = fitglme(table2export_3, 'risk_low ~ distType * binNumber + (1|subIdx)', 'DummyVarCoding', 'Effects');
-    an_high = anova(high_glme);
-    an_low  = anova(low_glme);
+    %%%%% now move adjusted p-values back into the table
+    p_count=1;
+    for opj=1:length(bin_vec)-1 %%%% number of clusters
+        for pqr=opj+1:length(bin_vec)
+            post_hoc_table_dose{opj,pqr-1}=adj_p(p_count);
+            p_count=p_count+1;
+        end
+    end
 
+    %----------------------------------------------------------------------------------
+    %-------------------------------------------------------------------------------------------
+    %---------------------------------------------------------------------------------  
+    % ANALYSIS(2): sign difference in risk preferences between the two
+    % distirbutions?
+    %----------------------------------------------------------------------------------
+    
 
+    table2export_3 = array2table(stats_table_pref, 'VariableNames', {'subIdx', 'distType', 'riskyHigh', 'riskyLow', 'riskyDiff'});
+    [Hpref,Ppref,CIpref,STATSpref] = ttest2([table2export_3.riskyDiff(find(table2export_3.distType ==1))],...
+        [table2export_3.riskyDiff(find(table2export_3.distType ==2))]);
+    [Hg,Pg,CIg,STATSg] = ttest([table2export_3.riskyDiff(find(table2export_3.distType ==1))]);
+    [Hb,Pb,CIb,STATSb] = ttest([table2export_3.riskyDiff(find(table2export_3.distType ==2))]);
+
+    %----------------------------------------------------------------------------------
+    %----------------------------------------------------------------------------------
+    % ANALYSIS(3): risk preferences emerge over time in both-high or
+    % both-low? difference between the two distributions 
+
+    table2export_4 = array2table(stats_table_timeBinned_risk, 'VariableNames', {'subIdx', 'distType', 'binNumber',...
+        'risky_high', 'risky_low'});
+    table2export_4.distType = categorical(table2export_4.distType);
+    pref_glme_high = fitglme(table2export_4, 'risky_high ~ distType * binNumber + (1|subIdx)', 'DummyVarCoding', 'Effects');
+    an_high = anova(pref_glme_high);
+    Ch = dataset2cell(an_high);
+
+    for no=2:size(Ch,1)
+        eta2p=(Ch{no,2}*Ch{no,3})/(Ch{no,2}*Ch{no,3}+Ch{no,4});
+        Ch{no,6}=eta2p;
+        
+    end
+
+    pref_glme_low = fitglme(table2export_4, 'risky_low ~ distType * binNumber + (1|subIdx)', 'DummyVarCoding', 'Effects');
+    an_low = anova(pref_glme_low);
+
+    Cl = dataset2cell(an_low);
+
+    for no=2:size(Cl,1)
+        eta2p=(Cl{no,2}*Cl{no,3})/(Cl{no,2}*Cl{no,3}+Cl{no,4});
+        Cl{no,6}=eta2p;
+        
+    end
+    
         axes(hb);
         set(hb, 'FontName', 'times');
+        axis square
         xlim([0 1]);
         ylim([0 1]);
         xlabel('P(Risky|Both-High)');
@@ -181,27 +281,32 @@ function plot_populationBehaviour(base_path, ptIdx, figSavename)
        
         axes(ht);
         set(ht, 'FontName', 'times');
+        axis square
         hold on
 %         plot([1:5], prop_accuracy, col2plot, 'LineWidth', 1.2);
         ylim([0 1]);
         xlim([0 6]);
         axes(hh);
         set(hh, 'FontName', 'times');
+        axis square
         hold on
 %         plot([1:5], prop_risk_high, col2plot, 'LineWidth', 1.2);
         ylim([0 1]);
         xlim([0 6]);
         title('P(Risky|Both-High): Binned Trials');
         axes(hl)
+        axis square
         set(hl, 'FontName', 'times');
 %         plot([1:5], prop_risk_low, col2plot, 'LineWidth', 1.2);
         ylim([0 1]);
         xlim([0 6]);
         title('P(Risky|Both-Low): Binned Trials');
+        
 
 
-        axes(hb);
         gcf;
-        print(figSavename, '-dpng');
+        set(gcf, 'PaperOrientation', 'landscape');
+        print(figSavename,'-dpng');
+        print(figSavename,  '-fillpage', '-dpdf')
 
 end

@@ -16,10 +16,10 @@ f.Position = [0.0423 5.6938 40.5342 14.4410];
 
 for blockType = 1:2
     if blockType == 1
-        col2plot = 'r'; %gaussian
+        col2plot = [0.7059 0.4745 0.9882]; %gaussian
         x2plot = [1:2];
     elseif blockType == 2
-        col2plot = 'b'; %bimodal
+        col2plot = [0.3961 0.9608 0.3647]; %bimodal
         x2plot = [3:4];
     end
 
@@ -31,12 +31,12 @@ for blockType = 1:2
     low_idx_blk     = (tmpBlockData.cnd_idx == 2);
 
     % risky choice selection in both-high
-    high_high_blk = find(tmpBlockData.stimulus_choice(high_idx_blk) == 4);
+    risk_high_blk = find(tmpBlockData.stimulus_choice(high_idx_blk) == 4);
     % risky choice selection in both-low
-    high_low_blk = find(tmpBlockData.stimulus_choice(low_idx_blk) == 2);
+    risk_low_blk = find(tmpBlockData.stimulus_choice(low_idx_blk) == 2);
 
-    prop_risk_high_blk   = length(high_high_blk)/sum(high_idx_blk==1);
-    prop_risk_low_blk    = length(high_low_blk)/sum(low_idx_blk==1);
+    prop_risk_high_blk   = length(risk_high_blk)/sum(high_idx_blk==1);
+    prop_risk_low_blk    = length(risk_low_blk)/sum(low_idx_blk==1);
 
     hb = subplot(1, 3, 2) %risk pref. - over trials
     hold on
@@ -53,23 +53,24 @@ for blockType = 1:2
         % return condition indices of the binned trials
         % random condition selection ordering will deliver different number
         % of conditions per bin??
-        diffCnd_idx = (tmpBlockData.cnd_idx(tmpBinIdx) == 1);
-        high_idx    = (tmpBlockData.cnd_idx(tmpBinIdx) == 3);
-        low_idx     = (tmpBlockData.cnd_idx(tmpBinIdx) == 2);
+        tmpTrials = [];
+        
+        tmpTrials = tmpBlockData(tmpBinIdx, :);
 
+        diffCnd_idx = find(tmpTrials.cnd_idx == 1);
+        high_idx    = find(tmpTrials.cnd_idx == 3);
+        low_idx     = find(tmpTrials.cnd_idx == 2);
 
-        high_diff = find(tmpBlockData.stimulus_choice(tmpBinIdx(diffCnd_idx)) == 3 ...
-            | tmpBlockData.stimulus_choice(tmpBinIdx(diffCnd_idx)) == 4);
+        high_diff = find(tmpTrials.stimulus_choice(diffCnd_idx) == 3 ...
+            | tmpTrials.stimulus_choice(diffCnd_idx) == 4);
 
-        high_high = find(tmpBlockData.stimulus_choice(tmpBinIdx(high_idx)) == 2 ...
-            | tmpBlockData.stimulus_choice(tmpBinIdx(high_idx)) == 4);
+        high_high = find(tmpTrials.stimulus_choice(high_idx) == 4);
 
-        high_low = find(tmpBlockData.stimulus_choice(tmpBinIdx(low_idx)) == 2 ...
-            | tmpBlockData.stimulus_choice(tmpBinIdx(low_idx)) == 4);
+        high_low = find(tmpTrials.stimulus_choice(low_idx) == 2);
 
-        prop_accuracy(ibin)     = length(high_diff)/sum(diffCnd_idx == 1);
-        prop_risk_high(ibin)    = length(high_high)/sum(high_idx==1);
-        prop_risk_low(ibin)     = length(high_low)/sum(low_idx==1);
+        prop_accuracy(ibin)     = length(high_diff)/length(diffCnd_idx);
+        prop_risk_high(ibin)    = length(high_high)/length(high_idx);
+        prop_risk_low(ibin)     = length(high_low)/length(low_idx);
 
         ht = subplot(1, 3, 1) %choice accuracy - over trials
         plot(ibin, prop_accuracy(ibin), 'o', 'MarkerFaceColor', col2plot, 'MarkerEdgeColor', col2plot, 'linew', 1.2);
@@ -103,19 +104,19 @@ for blockType = 1:2
     axes(ht);
     set(ht, 'FontName', 'times');
     hold on
-    plot([1:5], prop_accuracy, col2plot, 'LineWidth', 1.2);
+    plot([1:5], prop_accuracy, 'color', col2plot, 'LineWidth', 1.2);
     ylim([0 1]);
     xlim([0 6]);
     axes(hh);
     set(hh, 'FontName', 'times');
     hold on
-    plot([1:5], prop_risk_high, col2plot, 'LineWidth', 1.2);
+    plot([1:5], prop_risk_high, 'color', col2plot, 'LineWidth', 1.2);
     ylim([0 1]);
     xlim([0 6]);
     title('P(Risky|Both-High): Binned Trials');
     axes(hl)
     set(hl, 'FontName', 'times');
-    plot([1:5], prop_risk_low, col2plot, 'LineWidth', 1.2);
+    plot([1:5], prop_risk_low, 'color', col2plot, 'LineWidth', 1.2);
     ylim([0 1]);
     xlim([0 6]);
     title('P(Risky|Both-Low): Binned Trials');

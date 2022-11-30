@@ -25,7 +25,12 @@ plot_popBehav       = 0;    %plots average and SEM of behaviour across all subje
 process_eyelink     = 0;    %raw eye data --> normalised pupil, derivative computed and stored,
                             %for all task encodes
 
-plot_eyelinkData    = 1;    %stimulus and response aligned % signal change, derivative and 95th percentile computed and stored
+trialData_eyelink   = 1;
+
+plot_sessionEye     = 0;  
+plot_riskPref_eye   = 0;
+
+plot_eyelinkData    = 0;    %stimulus and response aligned % signal change, derivative and 95th percentile computed and stored
                             
 concact_allData     = 0;    %aligned behavioural and pupil data
 plot_popEye         = 0;    %plots for population eye data, different plots can be generated, 
@@ -37,9 +42,10 @@ plot_popEye         = 0;    %plots for population eye data, different plots can 
 % 004, 0010, 0011, 0012: only behaviour data 
 % 
 % ptIdx = [{'004', '005', '006', '007', '008', '009','0010','0011',...
-%     '0012', '014', '015', '016', '017', '018'}];
+%  '0012', '014', '015', '016', '017', '018', '019', '020', '021', '022',...
+%     '023', '024', '025', '026', '027'}];
 
-ptIdx = {'006'};
+ptIdx = {'005'};
 
 %----- JOB SUBFUNCTIONS: Behaviour ---------------------------------------------
 
@@ -47,25 +53,20 @@ if preprocess_behav
 
 for isubject = 1: length(ptIdx)
     close all hidden
-    cd([base_path ptIdx{isubject} '\']);
-    if ~exist([base_path ptIdx{isubject} '\processed_data\'])
-        mkdir([base_path ptIdx{isubject} '\processed_data\']);
-        
-    end
-    
-    cd([base_path ptIdx{isubject} '\processed_data\']);
+
     saveDataFilename = ['fullSession_' ptIdx{isubject} '.mat'];
 
-    if exist(saveDataFilename)
+    if  ~exist(saveDataFilename)
 
+        cd([base_path '\' ptIdx{isubject} '\raw_data\behav\']);
+        
          [allData] = preprocess_behavData(ptIdx{isubject});
-%          noRespIdx = ([allData.RT] == 0);
-%          allData(noRespIdx, :) = [];
-
+         data_setPath(base_path, ptIdx{isubject}, 1, 0);
          save(saveDataFilename, 'allData');
 
     else 
 
+        data_setPath(base_path, ptIdx{isubject}, 1, 0);
         load(saveDataFilename, 'allData');
 
     end
@@ -87,14 +88,9 @@ if concat_behav
 
     for isubject = 1: length(ptIdx)
     
+        data_setPath(base_path, ptIdx{isubject});
         noRespIdx = [];
-        cd([base_path ptIdx{isubject} '\']);
-        if ~exist([base_path ptIdx{isubject} '\processed_data\'])
-            mkdir([base_path ptIdx{isubject} '\processed_data\']);
-            
-        end
-        
-        cd([base_path ptIdx{isubject} '\processed_data\']);
+              
         dataFilename = ['fullSession_' ptIdx{isubject} '.mat'];
         load(dataFilename);
         
@@ -132,21 +128,12 @@ if process_eyelink
     ft_defaults;
 
 for isubject = 1: length(ptIdx)
-
-    cd([base_path ptIdx{isubject} '\']);
-
-    if ~exist([base_path ptIdx{isubject} '\processed_data\'])
-        mkdir([base_path ptIdx{isubject} '\processed_data\']);
-    end
-
-%     close all hidden
-
+       
     for iblock = 1:4
+
         close all hidden
-%         figure(iblock)
-        % include line to account for the fact not all participants possess
-        % eye data 
-        cd([base_path ptIdx{isubject}]);
+        [sub_folder, raw_path, process_path] = data_setPath(base_path, ptIdx{isubject}, 0, 1);       
+        cd(raw_path);
         loadEyeFilename = ['P' ptIdx{isubject} 'BLK' num2str(iblock) '.edf'];
 
         if ~exist(loadEyeFilename)
@@ -154,14 +141,17 @@ for isubject = 1: length(ptIdx)
             continue;
 
         else
-            cd([base_path ptIdx{isubject} '\processed_data\']);
+            
             saveFilename = ['P' ptIdx{isubject} 'BLK' num2str(iblock) '_extracted.mat'];
+            figsavename = ['P' ptIdx{isubject} 'BLK' num2str(iblock) '_processedPupil'];
 
-            if exist(saveFilename)
+            if ~exist(saveFilename)
     
                 [trl] = preprocess_eyelink(base_path, ptIdx{isubject}, iblock);
-                cd([base_path ptIdx{isubject} '\processed_data\']);
+                cd(process_path);
                 save(saveFilename, 'trl');
+                gcf;
+                print(figsavename, '-dpng');
     
             else
                 load(saveFilename, 'trl');
@@ -171,7 +161,123 @@ for isubject = 1: length(ptIdx)
 end
 end
 
+
+if trialData_eyelink
+
+    for isubject = 1: length(ptIdx)
+        
+        allTr_data = [];
+        [sub_folder, raw_path, process_path] = data_setPath(base_path, ptIdx{isubject}, 0, 1);       
+
+        for iblock = 1:4
+
+            cd(process_path);
+
+            loadEyeFilename = ['P' ptIdx{isubject} 'BLK' num2str(iblock) '_extracted.mat'];    
+            loadBehavFilename = ['fullSession_' num2str(ptIdx{isubject}) '.mat'];
+
+            if ~exist(loadEyeFilename)
+                continue;
+            else
+
+                [sub_folder, raw_path, process_path] = data_setPath(base_path, ptIdx{isubject}, 0, 1);       
+                cd(process_path);
+                load(loadEyeFilename);
+                [sub_folder, raw_path, process_path] = data_setPath(base_path, ptIdx{isubject}, 1, 0);       
+                cd(process_path);
+                load(loadBehavFilename);
+                [allTr] = trialExtraction_eyeData(trl, allData, isubject, iblock);
+            end
+                
+                [allTr_data] = [allTr_data; allTr];
+        end
+
+                saveFilename = ['allData_processed_PT' num2str(ptIdx{isubject}) '.mat'];
+                save(saveFilename, "allData");
+    end
+
+
+
+end
+
 %------------------------------------------------------------------------------
+
+if plot_sessionEye
+    for isubject = 1: length(ptIdx)
+        tmpBlock = [];
+        cd([base_path ptIdx{isubject} '\processed_data\']);
+        close all hidden
+        check_if_eye = ['P' ptIdx{isubject} 'BLK1_extracted.mat'];
+
+        if exist(check_if_eye)
+
+            if ~exist([base_path ptIdx{isubject} '\processed_norm_eyedata\'])
+                mkdir([base_path ptIdx{isubject} '\processed_norm_eyedata\']);
+            end
+
+            for iblock = 1:4
+
+                cd([base_path ptIdx{isubject} '\processed_data\']);
+                loadFilename = ['P' ptIdx{isubject} 'BLK' num2str(iblock) '_extracted.mat'];
+                behavFilename = ['fullSession_' num2str(ptIdx{isubject}) '.mat'];
+
+                if ~exist(loadFilename)
+                    continue;
+                else
+                    load(loadFilename);
+                    load(behavFilename);
+                    [epoch_stim, epoch_choice, epoch_feedback] = plot_eyeData(trl, allData, iblock, 1);
+
+                    savefilename_stim = [num2str(ptIdx{isubject}) '_blk' num2str(iblock) '_allPupil_epochStim'];
+                    save(savefilename_stim, 'epoch_stim');
+                    savefilename_stim = [num2str(ptIdx{isubject}) '_blk' num2str(iblock) '_allPupil_epochChoice'];
+                    save(savefilename_stim, 'epoch_choice');
+                    savefilename_stim = [num2str(ptIdx{isubject}) '_blk' num2str(iblock) '_allPupil_epochFeedback'];
+                    save(savefilename_stim, 'epoch_feedback');
+                end
+            end
+
+            cd([base_path ptIdx{isubject} '\processed_norm_eyedata\']);
+            figsavename = [num2str(ptIdx{isubject}) '_fullSession_z_deriv_pupil'];
+            gcf;
+            print(figsavename, '-dpng');
+        end
+
+    end
+
+end
+
+if plot_riskPref_eye
+
+    for isubject = 1: length(ptIdx)
+        tmpBlock = [];
+        cd([base_path ptIdx{isubject} '\processed_data\']);
+        close all hidden
+
+        check_if_eye = ['P' ptIdx{isubject} 'BLK1_extracted.mat'];
+
+        if exist(check_if_eye)
+
+            if ~exist([base_path ptIdx{isubject} '\processed_norm_eyedata\'])
+                mkdir([base_path ptIdx{isubject} '\processed_norm_eyedata\']);
+            end
+
+            for iblock = 1:4
+
+                cd([base_path ptIdx{isubject} '\processed_data\']);
+                behavFilename = ['fullSession_' num2str(ptIdx{isubject}) '.mat'];
+                load(behavFilename);
+                plot_eyeData_cnd_blk_choice_grouped(allData, iblock, ptIdx{isubject});
+
+                
+            end
+        end
+    end
+end
+
+       
+
+
 
 if plot_eyelinkData
         plot_eyeData_admin;
