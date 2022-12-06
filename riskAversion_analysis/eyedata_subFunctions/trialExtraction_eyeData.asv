@@ -18,6 +18,13 @@ trials2use = behav2use.trialNum;
 tmpPupil = struct();
 
 %initalise variables for behav data 
+if strcmp(subIdx, '008') && blockNum == 3
+
+    trials2use(1) = [];
+    behav2use(1, :) = [];
+
+end
+
 tmpBehav.subIdx((1:length(trials2use)), 1)      = str2num(subIdx);
 tmpBehav.trialNum((1:length(trials2use)), 1)    = trials2use;
 tmpBehav.blockNum((1:length(trials2use)), 1)    = blockNum;
@@ -103,7 +110,7 @@ for itrial = 1: length(trials2use)
 
 
 
-        data2use   = dataIn_eye(trials2use(itrial)).data;
+        data2use   = dataIn_eye(trials2use(itrial), :);
         %single event when button is pressed indicating choice
         respIdx = find([data2use(:, 3)] == 25);
 
@@ -193,7 +200,7 @@ for itrial = 1: length(trials2use)
                     % calc 95th percentile of derivative
                     tmpPupil.feedback_prtileResp_pupil= prctile(tmpPupil.feedback_preResp_pupil, 95);
                     tmpPupil.feedback_derivative = data2use((tmpIdx(1): tmpIdx(2)), 5);
-           
+          
                 end
 
             end
@@ -202,11 +209,15 @@ for itrial = 1: length(trials2use)
        
 
     end
+
+    if ~isempty(tmpPupil.stim_aligned_pupil)
       allTr = [allTr; struct2table(tmpPupil, 'AsArray', 1)];
+    else 
+        continue;
+    end
 
 end
 
-       allTr = [struct2table(tmpBehav) allTr];
-
+    allTr = [struct2table(tmpBehav) allTr];
 
 end

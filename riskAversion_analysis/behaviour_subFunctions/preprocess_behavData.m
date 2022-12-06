@@ -2,7 +2,11 @@ function [allData] = preprocess_behavData(ptIdx)
 
 allData = table();
 
-for iblock = 1:4
+tmpFiles = dir;
+tmpBlockNum = ([tmpFiles.bytes]) ~=0;
+
+
+for iblock = 1:sum(tmpBlockNum==1)
 
     tmpData = table();
     tmpFilename = ['PT_' ptIdx '_BLK' num2str(iblock) '.mat'];

@@ -110,7 +110,7 @@ for itrial = 1: length(trials2use)
 
 
 
-        data2use   = dataIn_eye(trials2use(itrial)).data;
+        data2use   = dataIn_eye(trials2use(itrial), :);
         %single event when button is pressed indicating choice
         respIdx = find([data2use(:, 3)] == 25);
 

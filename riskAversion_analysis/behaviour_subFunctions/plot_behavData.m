@@ -1,4 +1,4 @@
-function plot_behavData(ptIdx, allData, figSavename)
+function [accuracyAll] = plot_behavData(ptIdx, allData, figSavename)
 
 % plot accuracy P(high average choice| both different cnd)
 % 1 = low safe
@@ -13,6 +13,8 @@ figure(1);
 f = gcf;
 f.Units = 'centimeters';
 f.Position = [0.0423 5.6938 40.5342 14.4410];
+
+accuracyAll = zeros(1, 2);
 
 for blockType = 1:2
     if blockType == 1
@@ -44,8 +46,13 @@ for blockType = 1:2
     hold on
     bar(x2plot(2), prop_risk_low_blk, 'FaceColor', col2plot, 'FaceAlpha', 0.25);
     title('Risk Choices: All Trials');
-    % choice accuracy and risk preferences: trial binned
 
+    % OVERALL ACCURACY USED FOR SUBJECT INCLUSION IN DATA ANALYSES 
+    diff_idx_blk    = (tmpBlockData.cnd_idx == 1);
+    diff_high_blk   = find(tmpBlockData.stimulus_choice(diff_idx_blk) == 4 ...
+        | tmpBlockData.stimulus_choice(diff_idx_blk) == 2);
+    accuracyAll(1, blockType) = length(diff_high_blk)./ sum(diff_idx_blk == 1)*100;
+    % choice accuracy and risk preferences: trial binned
     for ibin = 1: length(bin)
 
         tmpBinIdx = find(ismember(tmpBlockData.trialNum, (bin(ibin): (bin(ibin) + binSize -1))));
@@ -121,7 +128,11 @@ for blockType = 1:2
     xlim([0 6]);
     title('P(Risky|Both-Low): Binned Trials');
 
+    accuracyAll(blockType) = sum(prop_accuracy)./5*100;
+
 end
+
+
 
 axes(hb);
 lgn = legend({'Gaussian', '', 'Bimodal', ''});

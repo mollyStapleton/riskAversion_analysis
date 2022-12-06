@@ -1,6 +1,6 @@
-function [trl] = preprocess_eyelink(base_path, ptIdx, blockNum)
+function [trl] = preprocess_eyelink(raw_path, ptIdx, blockNum)
 
-    cd([base_path ptIdx]);
+    cd([raw_path]);
     tmpFilename = ['P' ptIdx 'BLK' num2str(blockNum) '.asc'];
 
     % read in the asc EyeLink file
@@ -24,6 +24,10 @@ function [trl] = preprocess_eyelink(base_path, ptIdx, blockNum)
         figure(2);
         subplot(3, 1, 1)
         plot(data.times, data.pupil, 'color', [0.75 0.75 0.75], 'linew', 1.2);
+
+        noPupil = find(data.pupil == 0);
+        noGaze  = find(data.Xgaze == 0  & data.Ygaze == 0);
+        noPupilPerc = length(data.pupil)./length(noPupil);
 
         % (i) interpolation for missing data and noise transients 
         % returns interpolated data for blinks and other noise transients 

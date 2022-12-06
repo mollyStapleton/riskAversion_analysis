@@ -12,27 +12,42 @@ cd(base_path);
 %---------------------------------
 % SELECT JOB TO RUN 
 %--------------------------------------------
-
-preprocess_behav    = 0;    %takes individual participants data and produces a matrix of all relevant information for analysis. 
-                            %saves this data within each participants folder 
-                            %produces and saves a figure of behaviour overview 
+%----------------------------------------------------------------------------
+% SINGLE SUBJECT JOBS 
+%----------------------------------------------------------------------------
+preprocess_behav    = 0;    %takes individual participants data and produces a matrix of all relevant information for analysis.
+                            %saves this data within each participants folder
+                            %produces and saves a figure of behaviour overview
                             %analysis replicated from Moeller et al., 2021
-plot_popBehav       = 0;    %plots average and SEM of behaviour across all subjects 
 
-process_eyelink     = 0;    %raw eye data --> normalised pupil, derivative computed and stored,
+process_eyelink     = 1;    %raw eye data --> normalised pupil, derivative computed and stored,
                             %for all task encodes
 
-trialData_eyelink   = 1;    %returns matrix os fu
+subject_inclusion   = 1;    %returns indices of subjects to be included in analyses
+
+trialData_eyelink   = 0;    %returns matrix of full data for analyse
+                            %BEHAVIOUR AND PUPIL
+                            
+%----------------------------------------------------------------------------
+% POPULATION JOBS 
+%----------------------------------------------------------------------------
+
+concat_behav        = 0;                              
+plot_popBehav       = 0;    %plots average and SEM of behaviour across all subjects 
+
+concat_all          = 0;
 
 %-----------------------------------------------------------------------
 
 % 004, 0010, 0011, 0012: only behaviour data 
 % 
-% ptIdx = [{'004', '005', '006', '007', '008', '009','0010','0011',...
-%  '0012', '014', '015', '016', '017', '018', '019', '020', '021', '022',...
-%     '023', '024', '025', '026', '027'}];
+ptIdx = [{'019', '020', '021', '022',...
+    '023', '024', '025', '026', '027',...
+    '028', '029', '030', '031', '032',...
+    '033', '034', '035', '036', '037', '038',...
+    '039', '040', '041'}];
 
-ptIdx = {'005'};
+% ptIdx = {'019'};
 
 %----- JOB SUBFUNCTIONS: Behaviour ---------------------------------------------
 
@@ -40,70 +55,74 @@ if preprocess_behav
 
 for isubject = 1: length(ptIdx)
     close all hidden
-
+    [sub_folder, raw_path, process_path] = data_setPath(base_path, ptIdx{isubject}, 1, 0);
+    
     saveDataFilename = ['fullSession_' ptIdx{isubject} '.mat'];
+    cd(process_path);
 
     if  ~exist(saveDataFilename)
 
-        cd([base_path '\' ptIdx{isubject} '\raw_data\behav\']);
-        
+         cd(raw_path);        
          [allData] = preprocess_behavData(ptIdx{isubject});
-         data_setPath(base_path, ptIdx{isubject}, 1, 0);
+         cd(process_path);
          save(saveDataFilename, 'allData');
 
     else 
-
-        data_setPath(base_path, ptIdx{isubject}, 1, 0);
         load(saveDataFilename, 'allData');
-
     end
 
         figSavename = [ptIdx{isubject} '_behaviouralOverview'];
 
         if ~exist(figSavename)
-
             plot_behavData(ptIdx{isubject}, allData, figSavename);
+        end
+
+        if trial_inclusion 
+
+            
 
         end
+
 end
 end
 
-%----------------------------------------------------------------------------
+%-------------------------------------------------------------------------
+%-----------------------------------------------------------------------------
 
 if concat_behav
-   concatData = [];
 
-    for isubject = 1: length(ptIdx)
+    allTr_allSubjects = [];
+
+for isubject = 1: length(ptIdx)
+
+     [sub_folder, raw_path, process_path] = data_setPath(base_path, ptIdx{isubject}, 1, 0);
+     loadDataFilename = ['fullSession_' ptIdx{isubject} '.mat'];
+     cd(process_path);
+     load(loadDataFilename);
     
-        data_setPath(base_path, ptIdx{isubject});
-        noRespIdx = [];
-              
-        dataFilename = ['fullSession_' ptIdx{isubject} '.mat'];
-        load(dataFilename);
-        
-        noRespIdx = ([allData.RT] == 0);
-        allData(noRespIdx, :) = [];
-        concatData = [concatData; allData];
-        
-    end
+     allTr_allSubjects = [allTr_allSubjects; allData];
+   
 
-    % save concatenated data file 
-    savePopFilename = ['populationBehav.mat'];
-    cd([base_path]);
-    save(savePopFilename, 'concatData');
-
-    csv_filename = 'population_behav.xlsx';
-
-    writetable(concatData, csv_filename, 'WriteVariableNames', true);
+end
+    
+    saveFilename = ['allTr_allSubjects.mat'];
+    cd(base_path);
+    save(saveFilename, 'allTr_allSubjects');
 
 end
 
 %-------------------------------------------------------------------------
+%-----------------------------------------------------------------------------
 
 if plot_popBehav
+    
+    cd(base_path);
 
-    figSavename = ['population_behaviour'];
-    plot_populationBehaviour(base_path, ptIdx, figSavename);
+    figSavename = ['populationBehaviour'];
+    loadDataFilename = ['allTr_allSubjects.mat'];
+    load(loadDataFilename);
+
+    plot_populationBehaviour(allTr_allSubjects, figSavename);
 
 end
 
@@ -134,7 +153,7 @@ for isubject = 1: length(ptIdx)
 
             if ~exist(saveFilename)
     
-                [trl] = preprocess_eyelink(base_path, ptIdx{isubject}, iblock);
+                [trl] = preprocess_eyelink(raw_path, ptIdx{isubject}, iblock);
                 cd(process_path);
                 save(saveFilename, 'trl');
                 gcf;
@@ -153,11 +172,10 @@ if trialData_eyelink
 
     for isubject = 1: length(ptIdx)
         
-        allTr_data = [];
-        [sub_folder, raw_path, process_path] = data_setPath(base_path, ptIdx{isubject}, 0, 1);       
+        allTr_data = [];   
 
         for iblock = 1:4
-
+            [sub_folder, raw_path, process_path] = data_setPath(base_path, ptIdx{isubject}, 0, 1);       
             cd(process_path);
 
             loadEyeFilename = ['P' ptIdx{isubject} 'BLK' num2str(iblock) '_extracted.mat'];    
@@ -173,15 +191,38 @@ if trialData_eyelink
                 [sub_folder, raw_path, process_path] = data_setPath(base_path, ptIdx{isubject}, 1, 0);       
                 cd(process_path);
                 load(loadBehavFilename);
-                [allTr] = trialExtraction_eyeData(trl, allData, isubject, iblock);
+                [allTr] = trialExtraction_eyeData(trl, allData, ptIdx{isubject}, iblock);
             end
-                
-                [allTr_data] = [allTr_data; allTr];
+                if strcmp(ptIdx{isubject}, '008') && iblock == 3
+                    allTr(1, :) = [];
+                end
+                    [allTr_data] = [allTr_data; allTr];
         end
-                cd([sub_folder '\processed_data\']);
-                saveFilename = ['allData_processed_PT' num2str(ptIdx{isubject}) '.mat'];
-                save(saveFilename, "allData");
+
+
+    cd([sub_folder '\processed_data\']);
+    saveFilename = ['allTr_' num2str(ptIdx{isubject}) '.mat'];
+    save(saveFilename, "allTr_data");
+                     
+    end
+end
+
+if concat_all
+
+    for isubject = 1: length(ptIdx)
+
+        [sub_folder, raw_path, process_path] = data_setPath(base_path, ptIdx{isubject}, 0, 1);  
+        cd([sub_folder]);
+
+        loadFilename = ['allTr_' num2str(ptIdx{isubject}) '.mat'];
+        load(loadFilename);
+
+
+
     end
 
+
+
 end
+
 
