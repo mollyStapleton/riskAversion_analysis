@@ -242,7 +242,8 @@ if plot_cndEyeData
       % plot z-score pupil and derivative for both high and both low
       % conditions, split according to risk preferences 
       
-      plot_eyeData_cnd_riskPref_blk_population(fullData_riskAversion)
+%       plot_eyeData_riskPref_x_dist_population(fullData_riskAversion);
+      plot_derivData_riskPref_x_dist_population(fullData_riskAversion)
 
 
 end
