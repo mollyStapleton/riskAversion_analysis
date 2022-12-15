@@ -18,7 +18,7 @@ function [trl] = preprocess_eyelink(raw_path, ptIdx, blockNum)
         % sample for us to retrieve the relevant pupil data in relation to
         % each task encode
 
-        [trl] = riskAversion_trialfun(data.event);
+        [tmptrl] = riskAversion_trialfun(data.event, ptIdx, blockNum);
 
         % plot raw data
         figure(2);
@@ -88,19 +88,19 @@ function [trl] = preprocess_eyelink(raw_path, ptIdx, blockNum)
    
         sgtitle(tmpFilename);
 
-        for itrial = 1: length(trl)
+        for itrial = 1: length(tmptrl)
 
             fullData = [];
-            tmpEncodes = trl(itrial).encodes;
+            tmpEncodes = tmptrl(itrial).encodes;
 
             % alter sample encodes so that they match the downsampled time
             % vector
-            trl(itrial).encodes(:, 2) = round(trl(itrial).encodes(:, 2).*(50/1000));
+            tmptrl(itrial).encodes(:, 2) = round(tmptrl(itrial).encodes(:, 2).*(50/1000));
     
             for icodes = 2: length(tmpEncodes)-1 %loop over the trial epochs
                 tmpData = [];
 
-                diffEncode = (trl(itrial).encodes(icodes+1, 2) - trl(itrial).encodes(icodes, 2));
+                diffEncode = (tmptrl(itrial).encodes(icodes+1, 2) - tmptrl(itrial).encodes(icodes, 2));
 
                 % accounts for the fact response and delay are encoded at
                 % the same time. 
@@ -110,23 +110,23 @@ function [trl] = preprocess_eyelink(raw_path, ptIdx, blockNum)
                     encodeAmend = 0;
                 end
                     %pad matrix with NaN
-                    tmpData(1: length(trl(itrial).encodes(icodes, 2): trl(itrial).encodes(icodes+1, 2)-encodeAmend), [1:5]) = NaN;
+                    tmpData(1: length(tmptrl(itrial).encodes(icodes, 2): tmptrl(itrial).encodes(icodes+1, 2)-encodeAmend), [1:5]) = NaN;
                     
                     % trial number
                     tmpData(:, 1) = itrial; 
                     % time series 
-                    tmpData(:, 2) = dwnTime(trl(itrial).encodes(icodes, 2): (trl(itrial).encodes(icodes+1, 2)-encodeAmend));
+                    tmpData(:, 2) = dwnTime(tmptrl(itrial).encodes(icodes, 2): (tmptrl(itrial).encodes(icodes+1, 2)-encodeAmend));
     
                     % task encodes 
-                        for idx = 1: length(trl(itrial).encodes(icodes, 2): (trl(itrial).encodes(icodes+1, 2)-encodeAmend))
+                        for idx = 1: length(tmptrl(itrial).encodes(icodes, 2): (tmptrl(itrial).encodes(icodes+1, 2)-encodeAmend))
             
-                            tmpData(idx, 3) = trl(itrial).encodes(icodes,1);
+                            tmpData(idx, 3) = tmptrl(itrial).encodes(icodes,1);
                         end
     
                     % percentage change pupil series 
-                    tmpData(:, 4) = zmean_pupil(trl(itrial).encodes(icodes, 2): (trl(itrial).encodes(icodes+1, 2)-encodeAmend));
+                    tmpData(:, 4) = zmean_pupil(tmptrl(itrial).encodes(icodes, 2): (tmptrl(itrial).encodes(icodes+1, 2)-encodeAmend));
                     % 1st derivative of pupil series 
-                    tmpData(:, 5) = deriv_pupil(trl(itrial).encodes(icodes, 2): (trl(itrial).encodes(icodes+1, 2)-encodeAmend));
+                    tmpData(:, 5) = deriv_pupil(tmptrl(itrial).encodes(icodes, 2): (tmptrl(itrial).encodes(icodes+1, 2)-encodeAmend));
 
                 
 

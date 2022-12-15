@@ -15,15 +15,15 @@ cd(base_path);
 %----------------------------------------------------------------------------
 % SINGLE SUBJECT JOBS 
 %----------------------------------------------------------------------------
-preprocess_behav    = 0;    %takes individual participants data and produces a matrix of all relevant information for analysis.
+preprocess_behav    = 1;    %takes individual participants data and produces a matrix of all relevant information for analysis.
                             %saves this data within each participants folder
                             %produces and saves a figure of behaviour overview
                             %analysis replicated from Moeller et al., 2021
 
-process_eyelink     = 1;    %raw eye data --> normalised pupil, derivative computed and stored,
+process_eyelink     = 0;    %raw eye data --> normalised pupil, derivative computed and stored,
                             %for all task encodes
 
-subject_inclusion   = 1;    %returns indices of subjects to be included in analyses
+subject_inclusion   = 0;    %returns indices of subjects to be included in analyses
 
 trialData_eyelink   = 0;    %returns matrix of full data for analyse
                             %BEHAVIOUR AND PUPIL
@@ -41,10 +41,8 @@ concat_all          = 0;
 
 % 004, 0010, 0011, 0012: only behaviour data 
 % 
-ptIdx = [{'019', '020', '021', '022',...
-    '023', '024', '025', '026', '027',...
-    '028', '029', '030', '031', '032',...
-    '033', '034', '035', '036', '037', '038',...
+ptIdx = [{'019', '020', '021', '022', '023', '024',...
+    '025', '026', '027', '028', '029033', '034', '035', '036', '037', '038',...
     '039', '040', '041'}];
 
 % ptIdx = {'019'};
@@ -52,6 +50,10 @@ ptIdx = [{'019', '020', '021', '022',...
 %----- JOB SUBFUNCTIONS: Behaviour ---------------------------------------------
 
 if preprocess_behav
+
+    if subject_inclusion 
+        sub2include = [];
+    end
 
 for isubject = 1: length(ptIdx)
     close all hidden
@@ -74,12 +76,12 @@ for isubject = 1: length(ptIdx)
         figSavename = [ptIdx{isubject} '_behaviouralOverview'];
 
         if ~exist(figSavename)
-            plot_behavData(ptIdx{isubject}, allData, figSavename);
+            [subAccuracy] = plot_behavData(ptIdx{isubject}, allData, figSavename);
         end
 
-        if trial_inclusion 
-
-            
+        if subject_inclusion 
+            subAccuracy = [str2num(ptIdx{isubject}) subAccuracy];
+            sub2include = [sub2include; subAccuracy];
 
         end
 
@@ -122,7 +124,7 @@ if plot_popBehav
     loadDataFilename = ['allTr_allSubjects.mat'];
     load(loadDataFilename);
 
-    plot_populationBehaviour(allTr_allSubjects, figSavename);
+    plot_populationBehaviour(base_path, allTr_allSubjects, figSavename);
 
 end
 

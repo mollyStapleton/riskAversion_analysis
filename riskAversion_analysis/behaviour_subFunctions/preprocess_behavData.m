@@ -23,6 +23,7 @@ for iblock = 1:sum(tmpBlockNum==1)
     tmpData.stim_r              = dataOut.stim_right';
     tmpData.chosen_dir          = dataOut.choice';
 
+
     for itrial = 1: length(dataOut.choice)
 
         if ~isempty(dataOut.choice(itrial))
@@ -49,6 +50,29 @@ for iblock = 1:sum(tmpBlockNum==1)
             end
 
         end
+
+        % indices for mean high choices 
+        if tmpData.cnd_idx(itrial) == 1 % both different
+            if tmpData.stimulus_choice(itrial) == 3 || tmpData.stimulus_choice(itrial) == 4 
+                tmpData.choice_high(itrial) = 1 ;
+            else 
+                tmpData.choice_high(itrial) = 0 ;
+            end
+        else 
+            tmpData.choice_high(itrial) = NaN;
+        end
+
+        % indices for risky choices 
+        if tmpData.cnd_idx(itrial) == 2 || tmpData.cnd_idx(itrial) == 3 % both different
+            if tmpData.stimulus_choice(itrial) == 2 || tmpData.stimulus_choice(itrial) == 4
+                tmpData.choice_risky(itrial) = 1 ;
+            else
+                tmpData.choice_risky(itrial) = 0 ;
+            end
+        else
+            tmpData.choice_risky(itrial) = NaN;
+        end
+
     end
 
     tmpData.RT                  = dataOut.RT';

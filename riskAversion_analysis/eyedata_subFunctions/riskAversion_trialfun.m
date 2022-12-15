@@ -1,4 +1,4 @@
-function [trl] = riskAversion_trialfun(event)
+function [trl] = riskAversion_trialfun(event, ptIdx, blockNum)
 
 value   = {event(find(~cellfun(@isempty,strfind({event.value},'MSG')))).value};
 sample  = [event(find(~cellfun(@isempty,strfind({event.value},'MSG')))).sample];
@@ -10,6 +10,11 @@ tstart_value  = {event(find(~cellfun(@isempty,strfind({event.value},'20')))).val
 tend_sample = [event(find(strcmp('21', {event.type}))).sample]';
 tend_value  = {event(find(~cellfun(@isempty,strfind({event.value},'21')))).value};
 trl           = [];
+
+% accounts for a double '21' message 
+if strcmp(ptIdx, '047') && blockNum == 4 
+    tend_sample(12) =[];
+end
 
 for itrial = 1: length(tstart_sample)
 
@@ -43,8 +48,9 @@ for itrial = 1: length(tstart_sample)
 
     end
     
-    
-    trl = [trl newTrl];
+    if ~isempty(newTrl)
+        trl = [trl newTrl];
+    end
 
 
 end

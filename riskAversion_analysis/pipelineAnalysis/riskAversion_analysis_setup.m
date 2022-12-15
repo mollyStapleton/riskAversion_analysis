@@ -23,7 +23,7 @@ preprocess_behav    = 0;    %takes individual participants data and produces a m
 process_eyelink     = 0;    %raw eye data --> normalised pupil, derivative computed and stored,
                             %for all task encodes
 
-subject_inclusion   = 1;    %returns indices of subjects to be included in analyses
+subject_inclusion   = 0;    %returns indices of subjects to be included in analyses
 
 trialData_eyelink   = 0;    %returns matrix of full data for analyse
                             %BEHAVIOUR AND PUPIL
@@ -33,21 +33,22 @@ trialData_eyelink   = 0;    %returns matrix of full data for analyse
 %----------------------------------------------------------------------------
 
 concat_behav        = 0;                              
-plot_popBehav       = 1;    %plots average and SEM of behaviour across all subjects 
+plot_popBehav       = 0;    %plots average and SEM of behaviour across all subjects 
 
-concat_all          = 0;
+concat_all          = 1;
 
 %-----------------------------------------------------------------------
 
 % 004, 0010, 0011, 0012: only behaviour data 
-% 
-ptIdx = [{'019', '020', '021', '022',...
-    '023', '024', '025', '026', '027',...
-    '028', '029', '030', '031', '032',...
-    '033', '034', '035', '036', '037', '038',...
-    '039', '040', '041'}];
+% 041 & 043 removed due to task freezing 
+% 032 & 035 eye data removed as they wore glasses 
 
-% ptIdx = {'019'};
+ptIdx = [{'019', '020', '021', '022', '023', '024',...
+    '025', '026', '027', '028', '029', '030',...
+    '033', '034', '036', '037', '038',...
+    '039', '040', '042', '044', '045', '046', '047'}];
+
+% ptIdx = {'039'};
 
 %----- JOB SUBFUNCTIONS: Behaviour ---------------------------------------------
 
@@ -152,6 +153,7 @@ for isubject = 1: length(ptIdx)
 
         else
             
+            cd(process_path);
             saveFilename = ['P' ptIdx{isubject} 'BLK' num2str(iblock) '_extracted.mat'];
             figsavename = ['P' ptIdx{isubject} 'BLK' num2str(iblock) '_processedPupil'];
 
@@ -164,7 +166,7 @@ for isubject = 1: length(ptIdx)
                 print(figsavename, '-dpng');
     
             else
-                load(saveFilename, 'trl');
+%                 load(saveFilename, 'trl');
             end
         end
     end
@@ -212,19 +214,16 @@ if trialData_eyelink
 end
 
 if concat_all
-
+fullData_riskAversion = [];
     for isubject = 1: length(ptIdx)
 
         [sub_folder, raw_path, process_path] = data_setPath(base_path, ptIdx{isubject}, 0, 1);  
-        cd([sub_folder]);
-
+        cd([sub_folder 'processed_data/']);
         loadFilename = ['allTr_' num2str(ptIdx{isubject}) '.mat'];
         load(loadFilename);
 
-
-
+        fullData_riskAversion = [fullData_riskAversion; allTr_data]
     end
-
 
 
 end

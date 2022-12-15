@@ -23,7 +23,7 @@ if eyeFlag == 1
     raw_path        = [base_path subjectIdx '\raw_data\eye\'];
     process_path    = [base_path subjectIdx '\processed_data\eye\'];
 
-    if ~exist([base_path subjectIdx '\raw_data\eye'])
+    if ~exist([base_path subjectIdx '\processed_data\eye'])
         mkdir([base_path subjectIdx '\processed_data\eye\']);
 
     end

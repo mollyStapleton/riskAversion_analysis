@@ -12,8 +12,8 @@ idx = find(dataIn_behav.blockNumber == blockNum);
 behav2use = dataIn_behav(idx, :);
 xlsx_full = [];
 
-noRespIdx = behav2use.RT==0;
-behav2use(noRespIdx, :) = [];
+% noRespIdx = behav2use.RT==0;
+% behav2use(noRespIdx, :) = [];
 trials2use = behav2use.trialNum;
 tmpPupil = struct();
 
@@ -24,37 +24,26 @@ if strcmp(subIdx, '008') && blockNum == 3
     behav2use(1, :) = [];
 
 end
+% 
+% if strcmp(subIdx, '039') && blockNum == 1 
+%     dataIn_eye(:, 83) = [];
+%     behav2use(83, :)  = [];
+%     trials2use(83)
 
 tmpBehav.subIdx((1:length(trials2use)), 1)      = str2num(subIdx);
 tmpBehav.trialNum((1:length(trials2use)), 1)    = trials2use;
 tmpBehav.blockNum((1:length(trials2use)), 1)    = blockNum;
 tmpBehav.distType((1:length(trials2use)), 1)    = behav2use.distType;
 tmpBehav.cndIdx((1:length(trials2use)), 1)      = behav2use.cnd_idx;
-tmpBehav.stimR((1:length(trials2use)), 1)       = behav2use.stim_r;
-tmpBehav.stimL((1:length(trials2use)), 1)       = behav2use.stim_l;
-tmpBehav.stimChosen((1:length(trials2use)), 1)  = behav2use.stimulus_choice;
+tmpBehav.reward((1:length(trials2use)), 1)      = behav2use.reward_obtained;
+tmpBehav.RT((1:length(trials2use)), 1)          = behav2use.RT;
+tmpBehav.riskyChoice((1:length(trials2use)), 1) = behav2use.choice_risky;
+tmpBehav.accChoice((1:length(trials2use)), 1)   = behav2use.choice_high;
 
-% initialise variables for eye data
-% [-0.5: stim on min: 1s]
-% dataOut.stim_aligned_pupil = cell(length(trials2use), 1);
-% dataOut.stim_aligned_timeVec = cell(length(trials2use), 1);
-% dataOut.stim_preResp_pupil = cell(length(trials2use), 1);
-% dataOut.stim_prtileResp_pupil = NaN(length(trials2use), 1);
-% dataOut.stim_derivative =  cell(length(trials2use), 1);
-% 
-% % [-0.2: response: 1s]
-% dataOut.choice_aligned_pupil = cell(length(trials2use), 1);
-% dataOut.choice_aligned_timeVec = cell(length(trials2use), 1);
-% dataOut.choice_preResp_pupil = cell(length(trials2use), 1);
-% dataOut.choice_prtileResp_pupil = NaN(length(trials2use), 1);
-% dataOut.choice_derivative =  cell(length(trials2use), 1);
-% 
-% % [-0.2: choiceIndicate: 1.5s]
-% dataOut.feedback_aligned_pupil = cell(length(trials2use), 1);
-% dataOut.feedback_aligned_timeVec = cell(length(trials2use), 1);
-% dataOut.feedback_preResp_pupil= cell(length(trials2use), 1);
-% dataOut.feedback_prtileResp_pupil = NaN(length(trials2use), 1);
-% dataOut.feedback_derivative =  cell(length(trials2use), 1);
+
+for itrial = 1: length(trials2use)
+
+    tmpPupil.baseline_raw = [];
 
 tmpPupil.stim_aligned_pupil = [];
 tmpPupil.stim_aligned_timeVec = [];
@@ -76,10 +65,7 @@ tmpPupil.feedback_preResp_pupil= [];
 tmpPupil.feedback_prtileResp_pupil = [];
 tmpPupil.feedback_derivative =  [];
 
-
-
-for itrial = 1: length(trials2use)
-    for iepoch = 1:3
+    for iepoch = 1:4
 
         if iepoch == 1
 
@@ -104,19 +90,22 @@ for itrial = 1: length(trials2use)
             epochEnd    = 1.5;
             phasicStart = -0.8;
             phasicEnd   = 1.3; %500ms from reward feedback
-
-
+        elseif iepoch == 4 
+            alignIdx  = 40; %ITI start
+            epochStart  = 0;
+            epochEnd    = 1.5; %ITI end
+       
         end
 
-
-
-        data2use   = dataIn_eye(trials2use(itrial), :);
+        data2use   = dataIn_eye(trials2use(itrial)).data;
+        
         %single event when button is pressed indicating choice
         respIdx = find([data2use(:, 3)] == 25);
+        nonRespIdx(itrial) = 0;
 
         if ~isempty(respIdx) %only look at trials where a response was made
 
-            if iepoch == 1 || iepoch == 3
+            if iepoch == 1 || iepoch == 3 || iepoch == 4 
                 alignPoint = find([data2use(:, 3) == alignIdx], 1);
             else
                 alignPoint = find([data2use(:, 3) == alignIdx]);
@@ -156,6 +145,11 @@ for itrial = 1: length(trials2use)
             checkTrialValidity = length(tmpIdx(1): tmpIdx(2));
             if checkTrialValidity < 86 && iepoch ==3
 
+                tmpPupil.feedback_preResp_pupil = NaN;
+                % calc 95th percentile of derivative
+                tmpPupil.feedback_prtileResp_pupil= NaN;
+                tmpPupil.feedback_derivative = NaN;
+
                 continue;
 
             else
@@ -172,40 +166,46 @@ for itrial = 1: length(trials2use)
                 elseif iepoch == 3
                     tmpPupil.feedback_aligned_timeVec = aligned_timevec(tmpIdx(1): tmpIdx(2));
                     tmpPupil.feedback_aligned_pupil = normPupil{itrial}(tmpIdx(1): tmpIdx(2));
+                elseif iepoch == 4 
+                    tmpPupil.baseline_raw = normPupil{itrial}(tmpIdx(1): tmpIdx(2));
                 end
 
                 %--------------------------------------------------------
                 % PHASIC RESPONSE
                 %--------------------------------------------------------------------
-
-                [ d, ix ] = min( abs( aligned_timevec - phasicStart) );
-                phasicIdx(1) = ix;
-                [ d, ix ] = min( abs( aligned_timevec - phasicEnd) );
-                phasicIdx(2) = ix;
-
-                if iepoch == 1
-                    tmpPupil.stim_preResp_pupil= data2use((phasicIdx(1): phasicIdx(2)), 5);
-                    % calc 95th percentile of derivative
-                    tmpPupil.stim_prtileResp_pupil  = prctile(tmpPupil.stim_preResp_pupil, 95);
-                    tmpPupil.stim_derivative  = data2use((tmpIdx(1): tmpIdx(2)), 5);
-
-                elseif iepoch == 2
-                    tmpPupil.choice_preResp_pupil = data2use((phasicIdx(1): phasicIdx(2)), 5);
-                    % calc 95th percentile of derivative
-                    tmpPupil.choice_prtileResp_pupil= prctile(tmpPupil.choice_preResp_pupil, 95);
-                    tmpPupil.choice_derivative = data2use((tmpIdx(1): tmpIdx(2)), 5);
-
-                elseif iepoch == 3
-                    tmpPupil.feedback_preResp_pupil = data2use((phasicIdx(1): phasicIdx(2)), 5);
-                    % calc 95th percentile of derivative
-                    tmpPupil.feedback_prtileResp_pupil= prctile(tmpPupil.feedback_preResp_pupil, 95);
-                    tmpPupil.feedback_derivative = data2use((tmpIdx(1): tmpIdx(2)), 5);
-          
+                if iepoch == 1 || iepoch == 2 || iepoch == 3
+                    [ d, ix ] = min( abs( aligned_timevec - phasicStart) );
+                    phasicIdx(1) = ix;
+                    [ d, ix ] = min( abs( aligned_timevec - phasicEnd) );
+                    phasicIdx(2) = ix;
+    
+                    if iepoch == 1
+                        tmpPupil.stim_preResp_pupil= data2use((phasicIdx(1): phasicIdx(2)), 5);
+                        % calc 95th percentile of derivative
+                        tmpPupil.stim_prtileResp_pupil  = prctile(tmpPupil.stim_preResp_pupil, 95);
+                        tmpPupil.stim_derivative  = data2use((tmpIdx(1): tmpIdx(2)), 5);
+    
+                    elseif iepoch == 2
+                        tmpPupil.choice_preResp_pupil = data2use((phasicIdx(1): phasicIdx(2)), 5);
+                        % calc 95th percentile of derivative
+                        tmpPupil.choice_prtileResp_pupil= prctile(tmpPupil.choice_preResp_pupil, 95);
+                        tmpPupil.choice_derivative = data2use((tmpIdx(1): tmpIdx(2)), 5);
+    
+                    elseif iepoch == 3
+                        tmpPupil.feedback_preResp_pupil = data2use((phasicIdx(1): phasicIdx(2)), 5);
+                        % calc 95th percentile of derivative
+                        tmpPupil.feedback_prtileResp_pupil= prctile(tmpPupil.feedback_preResp_pupil, 95);
+                        tmpPupil.feedback_derivative = data2use((tmpIdx(1): tmpIdx(2)), 5);
+              
+                    end
                 end
 
             end
+        else 
+            nonRespIdx(itrial) = 1;
+            continue;
+            
         end
-
        
 
     end
@@ -218,6 +218,16 @@ for itrial = 1: length(trials2use)
 
 end
 
+if size(behav2use, 1) ~= size(allTr, 1)
+    tmpBehav = struct2table(tmpBehav);
+    nonRespIdx = logical(nonRespIdx);
+    tmpBehav(nonRespIdx, :) = [];
+    allTr = [tmpBehav allTr];
+else
+    
     allTr = [struct2table(tmpBehav) allTr];
+
+end
+
 
 end

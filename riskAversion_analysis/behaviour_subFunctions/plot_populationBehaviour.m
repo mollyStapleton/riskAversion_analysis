@@ -202,6 +202,12 @@ anovaWriteTable(C, 'accuracy');
 
 
 table2export_3 = array2table(stats_table_pref, 'VariableNames', {'subIdx', 'distType', 'riskyHigh', 'riskyLow', 'riskyDiff'});
+distIdx = (table2export_3.distType == 1);
+gauss_mean = nanmean(table2export_3.riskyDiff(distIdx));
+bi_mean = nanmean(table2export_3.riskyDiff(~distIdx));
+gauss_std = nanstd(table2export_3.riskyDiff(distIdx));
+bi_std = nanstd(table2export_3.riskyDiff(~distIdx));
+
 [Hpref,Ppref,CIpref,STATSpref] = ttest2([table2export_3.riskyDiff(find(table2export_3.distType ==1))],...
     [table2export_3.riskyDiff(find(table2export_3.distType ==2))]);
 [Hg,Pg,CIg,STATSg] = ttest([table2export_3.riskyDiff(find(table2export_3.distType ==1))]);
@@ -250,7 +256,7 @@ hold on
 plot(x2plot, y2plot, 'k-');
 plot([0.5 0.5], [0 1], 'k--');
 plot([0 1], [0.5 0.5], 'k--');
-
+title({'Risk Preferences',  'Between Reward Distributions'});
 
 axes(ht);
 set(ht, 'FontName', 'times');
