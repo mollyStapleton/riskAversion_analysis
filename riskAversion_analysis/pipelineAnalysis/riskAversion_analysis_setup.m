@@ -35,8 +35,9 @@ trialData_eyelink   = 0;    %returns matrix of full data for analyse
 concat_behav        = 0;                              
 plot_popBehav       = 0;    %plots average and SEM of behaviour across all subjects 
 
-concat_all          = 1;
+concat_all          = 0;
 
+plot_cndEyeData     = 1;
 %-----------------------------------------------------------------------
 
 % 004, 0010, 0011, 0012: only behaviour data 
@@ -222,8 +223,26 @@ fullData_riskAversion = [];
         loadFilename = ['allTr_' num2str(ptIdx{isubject}) '.mat'];
         load(loadFilename);
 
-        fullData_riskAversion = [fullData_riskAversion; allTr_data]
+        fullData_riskAversion = [fullData_riskAversion; allTr_data];
     end
+
+        cd([base_path 'population_dataAnalysis\']);
+        saveAllName = ['fullData_riskAversion.mat'];
+        save(saveAllName, 'fullData_riskAversion');
+        
+end
+
+
+if plot_cndEyeData
+
+      cd([base_path 'population_dataAnalysis\']);
+      loadAllName = ['fullData_riskAversion.mat'];
+      load(loadAllName);
+
+      % plot z-score pupil and derivative for both high and both low
+      % conditions, split according to risk preferences 
+      
+      plot_eyeData_cnd_riskPref_blk_population(fullData_riskAversion)
 
 
 end
