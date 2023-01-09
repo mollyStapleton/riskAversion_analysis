@@ -73,7 +73,7 @@ tmpPupil.feedback_derivative =  [];
             epochStart  = -0.5;
             epochEnd    = 1;
             phasicStart = -0;
-            phasicEnd   = 0.5; %500ms from stimOnMin
+            phasicEnd   = 0.6; %500ms from stimOnMin
 
         elseif iepoch == 2
 

@@ -35,9 +35,9 @@ trialData_eyelink   = 0;    %returns matrix of full data for analyse
 concat_behav        = 0;                              
 plot_popBehav       = 0;    %plots average and SEM of behaviour across all subjects 
 
-concat_all          = 0;
+concat_all          = 1;
 
-plot_cndEyeData     = 1;
+plot_cndEyeData     = 0;
 %-----------------------------------------------------------------------
 
 % 004, 0010, 0011, 0012: only behaviour data 
@@ -47,9 +47,9 @@ plot_cndEyeData     = 1;
 ptIdx = [{'019', '020', '021', '022', '023', '024',...
     '025', '026', '027', '028', '029', '030',...
     '033', '034', '036', '037', '038',...
-    '039', '040', '042', '044', '045', '046', '047'}];
+    '039', '040', '042', '044', '045', '046', '047', '048'}];
 
-% ptIdx = {'039'};
+% ptIdx = {'048'};
 
 %----- JOB SUBFUNCTIONS: Behaviour ---------------------------------------------
 
@@ -128,7 +128,7 @@ if plot_popBehav
     loadDataFilename = ['allTr_allSubjects.mat'];
     load(loadDataFilename);
 
-    plot_populationBehaviour(base_path, allTr_allSubjects, figSavename);
+    plot_populationBehaviour(base_path, allTr_allSubjects);
 
 end
 
@@ -222,6 +222,9 @@ fullData_riskAversion = [];
         cd([sub_folder 'processed_data/']);
         loadFilename = ['allTr_' num2str(ptIdx{isubject}) '.mat'];
         load(loadFilename);
+        
+        clf;
+        plot_eyeData_riskPref_x_dist_individual(allTr_data, process_path);
 
         fullData_riskAversion = [fullData_riskAversion; allTr_data];
     end
@@ -242,9 +245,10 @@ if plot_cndEyeData
       % plot z-score pupil and derivative for both high and both low
       % conditions, split according to risk preferences 
       
-%       plot_eyeData_riskPref_x_dist_population(fullData_riskAversion);
-      plot_derivData_riskPref_x_dist_population(fullData_riskAversion)
-
+      plot_eyeData_riskPref_x_dist_population(fullData_riskAversion);
+%       plot_derivData_riskPref_x_dist_population(fullData_riskAversion);
+      
+%       plot_binnedPhasic_riskPref_x_dist_population(fullData_riskAversion);
 
 end
 
