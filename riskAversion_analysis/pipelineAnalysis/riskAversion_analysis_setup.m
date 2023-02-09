@@ -1,7 +1,8 @@
 %%% RISK AVERSION ANALYSIS PIPELINE:
-%%%%%% concatenate relevant data into a single structure 
-%%%%%%% 4 behavioural dataOut for each participants 
-%%%%%%%%%%%%% 4 .edf files per block 
+%%% pre process of both behavioural and eye data 
+%%% concatenates all data into a single structure 
+%%% series of scripts to run plots/stats/analysis etc 
+%%% *** see jobs list and accompanying descriptions ***
 
 clear all 
 close all 
@@ -27,7 +28,7 @@ subject_inclusion   = 0;    %returns indices of subjects to be included in analy
 
 trialData_eyelink   = 0;    %returns matrix of full data for analyse
                             %BEHAVIOUR AND PUPIL
-                            
+determinePhasicWin  = 0;    %stat analysis of averaged derivative data to determine appropriate window for phasic pupil 
 %----------------------------------------------------------------------------
 % POPULATION JOBS 
 %----------------------------------------------------------------------------
@@ -35,9 +36,13 @@ trialData_eyelink   = 0;    %returns matrix of full data for analyse
 concat_behav        = 0;                              
 plot_popBehav       = 0;    %plots average and SEM of behaviour across all subjects 
 
-concat_all          = 1;
-
+concat_all          = 0;
 plot_cndEyeData     = 0;
+
+analyse_epochBase   = 1;
+analyse_epochStim   = 0;
+analyse_epochChoice = 0;
+analyse_previousChoice = 0;
 %-----------------------------------------------------------------------
 
 % 004, 0010, 0011, 0012: only behaviour data 
@@ -45,11 +50,11 @@ plot_cndEyeData     = 0;
 % 032 & 035 eye data removed as they wore glasses 
 
 ptIdx = [{'019', '020', '021', '022', '023', '024',...
-    '025', '026', '027', '028', '029', '030',...
+    '025', '026', '027', '028', '029', '030', '031',...
     '033', '034', '036', '037', '038',...
     '039', '040', '042', '044', '045', '046', '047', '048'}];
 
-% ptIdx = {'048'};
+% ptIdx = {'031'};
 
 %----- JOB SUBFUNCTIONS: Behaviour ---------------------------------------------
 
@@ -66,7 +71,7 @@ for isubject = 1: length(ptIdx)
     saveDataFilename = ['fullSession_' ptIdx{isubject} '.mat'];
     cd(process_path);
 
-    if  ~exist(saveDataFilename)
+    if  exist(saveDataFilename)
 
          cd(raw_path);        
          [allData] = preprocess_behavData(ptIdx{isubject});
@@ -214,6 +219,17 @@ if trialData_eyelink
     end
 end
 
+if determinePhasicWin
+
+    cd([base_path 'population_dataAnalysis\']);
+    loadAllName = ['fullData_riskAversion.mat'];
+    load(loadAllName);
+
+    phasic_win([base_path 'population_dataAnalysis\'], fullData_riskAversion)
+
+end
+
+
 if concat_all
 fullData_riskAversion = [];
     for isubject = 1: length(ptIdx)
@@ -223,8 +239,8 @@ fullData_riskAversion = [];
         loadFilename = ['allTr_' num2str(ptIdx{isubject}) '.mat'];
         load(loadFilename);
         
-        clf;
-        plot_eyeData_riskPref_x_dist_individual(allTr_data, process_path);
+%         clf;
+%         plot_eyeData_riskPref_x_dist_individual(allTr_data, process_path);
 
         fullData_riskAversion = [fullData_riskAversion; allTr_data];
     end
@@ -252,4 +268,40 @@ if plot_cndEyeData
 
 end
 
+if analyse_epochBase
+
+      cd([base_path 'population_dataAnalysis\']);
+      loadAllName = ['fullData_riskAversion.mat'];
+      load(loadAllName);
+
+      baseline_analysis([base_path 'population_dataAnalysis\'], fullData_riskAversion);
+end
+
+if analyse_epochStim
+
+      cd([base_path 'population_dataAnalysis\']);
+      loadAllName = ['fullData_riskAversion.mat'];
+      load(loadAllName);
+
+      pupil_stim_analysis([base_path 'population_dataAnalysis\'], fullData_riskAversion);
+end
+if analyse_epochChoice
+
+      cd([base_path 'population_dataAnalysis\']);
+      loadAllName = ['fullData_riskAversion.mat'];
+      load(loadAllName);
+
+      pupil_choice_analysis([base_path 'population_dataAnalysis\'], fullData_riskAversion);
+end
+
+if analyse_previousChoice
+
+      cd([base_path 'population_dataAnalysis\']);
+      loadAllName = ['fullData_riskAversion.mat'];
+      load(loadAllName);
+
+      pupil_prevChoice_analysis([base_path 'population_dataAnalysis\'], fullData_riskAversion);
+
+
+end
 

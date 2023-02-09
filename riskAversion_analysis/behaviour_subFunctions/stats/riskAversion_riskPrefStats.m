@@ -5,7 +5,7 @@ binSize = 24;
 subs = unique(dataIn.pt_number);
 
 stats_table = [];
-
+clf;
 figure(1);
 set(gcf, 'Units', 'centimeters');
 set(gcf, 'position', [12.8852 2.7728 23.7755 17.3620]);
@@ -158,6 +158,7 @@ x2plot = linspace(0, 1);
 y2plot = linspace(0, 1);
 plot(x2plot, y2plot, 'k-');
 set(gca, 'FontName', 'times');
+sgtitle('\fontsize{14}', 'FontName', 'times');
 
 %-----------------------------------------------
 % STATISTICAL COMPARISONS 

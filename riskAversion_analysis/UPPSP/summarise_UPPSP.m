@@ -8,9 +8,14 @@ clear all
 
 
 dataFolder = ['C:\Users\jf22662\OneDrive - University of Bristol\Documents\GitHub\data\UPPS-P'];
-datafilename = ['UPPS_P_Example.csv'];
+datafilename = ['finalData.csv'];
 cd(dataFolder);
 dataIn  = readmatrix(datafilename);
+
+ptIdx = {'022', '023', '024',...
+    '025', '026', '027', '028', '029', '030', '031',...
+    '032', '033', '034', '035', '036', '037', '038',...
+    '039', '040', '042','044', '045', '046', '047', '048'};
 
 subComp = {'NegativeUrgency', 'LackPerseverance', 'LackPremeditation',...
     'SensationSeeking', 'PositiveUrgency'};
@@ -32,11 +37,11 @@ maxScore = 80; % 20 * 4;
 
 revScoreIdx = [1 0 0 1 1];
 
-for isub = 2: size(dataIn, 1)
+for isub = 1: size(dataIn, 1)
 
     respVec     = dataIn(isub, (19:end-1));
     tmpData     = zeros(1, 9);
-    tmpData(1)  = isub;
+    tmpData(1)  = str2num(ptIdx{isub});
 
     for isec = 1: 5
 
@@ -82,6 +87,7 @@ end
     subComp_dataOut = array2table(subComp_dataOut);
     subComp_dataOut.Properties.VariableNames = {'subIdx', subComp{:}, 'ImpulseScore', 'ImpulsePerc', 'ImpulseType'};
 
+    cd('C:\Users\jf22662\OneDrive - University of Bristol\Documents\GitHub\riskAversion_analysis\riskAversion_analysis\UPPSP\');
     savetableName = ['UPPSP_allScores_uptodate'];
     save(savetableName, 'subComp_dataOut');
 

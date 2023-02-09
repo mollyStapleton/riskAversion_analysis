@@ -134,9 +134,9 @@ end
 
 saveFolder = ['accuracy'];
 if ~exist([base_path '\' saveFolder])
-    mkdir([base_path '\' saveFolder])
-    cd([base_path '\' saveFolder]);
+    mkdir([base_path '\' saveFolder])    
 end
+cd([base_path '\' saveFolder]);
 anovaWriteTable(C, 'dist_accuracy');
 
 figsaveName = ['accuracy_population'];

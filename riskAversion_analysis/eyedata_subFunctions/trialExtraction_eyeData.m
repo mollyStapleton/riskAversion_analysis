@@ -72,16 +72,16 @@ tmpPupil.feedback_derivative =  [];
             alignIdx  = 14; %stimOnMin
             epochStart  = -0.5;
             epochEnd    = 1;
-            phasicStart = -0;
-            phasicEnd   = 0.6; %500ms from stimOnMin
+            phasicStart = 0.3;
+            phasicEnd   = 0.7; %500ms from stimOnMin
 
         elseif iepoch == 2
 
             alignIdx  = 25; %response
             epochStart  = -0.5;
             epochEnd    = 1;
-            phasicStart = -0.5; %500ms before response
-            phasicEnd   = 0;
+            phasicStart = 0.3; %500ms before response
+            phasicEnd   = 0.56;
 
         elseif iepoch == 3
 
