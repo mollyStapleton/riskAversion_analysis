@@ -30,15 +30,12 @@ function [trl] = preprocess_eyelink(raw_path, ptIdx, blockNum)
         noPupilPerc = length(data.pupil)./length(noPupil);
 
         % identify number of blinks during the sEBR epoch
-        if blockNum ~= 4
-            sbrStart    = find(data.blinksmp(:, 1) >= tmptrl(121).encodes(1, 2), 1);
-            sbr_blinks  = data.blinksmp((sbrStart: end), :);
-            sbr_dur     = sbr_blinks(:, 2) - sbr_blinks(:, 1);
-    
-            tmpSavename = ['SBRblock_' num2str(blockNum) '.mat'];
-            save(tmpSavename, 'sbr_blinks');
-        end
-        
+
+        sbrStart    = find(data.blinksmp(:, 1) >= tmptrl(121).encodes(1, 2), 1);
+        sbr_blinks  = data.blinksmp((sbrStart: end), :);
+        sbr_dur     = sbr_blinks(:, 2) - sbr_blinks(:, 1);
+
+        sbrData.bl
         % (i) interpolation for missing data and noise transients 
         % returns interpolated data for blinks and other noise transients 
         % newpupil is the interpolated 'clean' data

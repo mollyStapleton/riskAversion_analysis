@@ -13,6 +13,7 @@ cd(base_path);
 %---------------------------------
 % SELECT JOB TO RUN 
 %--------------------------------------------
+draft_analysis      = 1;    %used for ongoing draft analyses that might not make it into the final analysis
 %----------------------------------------------------------------------------
 % SINGLE SUBJECT JOBS 
 %----------------------------------------------------------------------------
@@ -39,7 +40,7 @@ plot_popBehav       = 0;    %plots average and SEM of behaviour across all subje
 concat_all          = 0;
 plot_cndEyeData     = 0;
 
-analyse_epochBase   = 1;
+analyse_epochBase   = 0;
 analyse_epochStim   = 0;
 analyse_epochChoice = 0;
 analyse_previousChoice = 0;
@@ -55,6 +56,16 @@ ptIdx = [{'019', '020', '021', '022', '023', '024',...
     '039', '040', '042', '044', '045', '046', '047', '048'}];
 
 % ptIdx = {'031'};
+
+%---- DRAFT ANALYSIS ----------------------------
+if draft_analysis
+
+    cd([base_path 'population_dataAnalysis\']);
+    loadAllName = ['fullData_riskAversion.mat'];
+    load(loadAllName);
+    analysisDrafting([base_path], fullData_riskAversion)
+
+end
 
 %----- JOB SUBFUNCTIONS: Behaviour ---------------------------------------------
 
@@ -163,7 +174,7 @@ for isubject = 1: length(ptIdx)
             saveFilename = ['P' ptIdx{isubject} 'BLK' num2str(iblock) '_extracted.mat'];
             figsavename = ['P' ptIdx{isubject} 'BLK' num2str(iblock) '_processedPupil'];
 
-            if ~exist(saveFilename)
+            if exist(saveFilename)
     
                 [trl] = preprocess_eyelink(raw_path, ptIdx{isubject}, iblock);
                 cd(process_path);

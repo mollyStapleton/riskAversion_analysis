@@ -55,5 +55,28 @@ for itrial = 1: length(tstart_sample)
 
 end
 
-
+if blockNum ~= 4
+    % return information for the spont. eyeblink response epoch 
+    sbrStart_sample     = [event(find(strcmp('200', {event.type}))).sample]';
+    sbrStart_value      = {event(find(~cellfun(@isempty,strfind({event.value},'200')))).value};
+    
+    sbrEnd_sample       = [event(find(strcmp('201', {event.type}))).sample]';
+    sbrEnd_value        = {event(find(~cellfun(@isempty,strfind({event.value},'201')))).value};
+    
+    newTrl              = [];
+    newTrl.trialID      = 121;
+    allTr               = [];
+    
+    sbrbeg = find([event.sample] == sbrStart_sample);
+    sbrend = find([event.sample] == sbrEnd_sample);
+    
+    allTr  = [event(sbrbeg(1): max(sbrend)).sample];
+    
+    eventIdx = sbrbeg:sbrend;
+    for iencode = 1: length(eventIdx)
+        newTrl.encodes(iencode, 1) = str2num(event(eventIdx(iencode)).type);
+        newTrl.encodes(iencode, 2) = allTr(iencode);   
+    end
+        trl = [trl newTrl];
+    end
 end
