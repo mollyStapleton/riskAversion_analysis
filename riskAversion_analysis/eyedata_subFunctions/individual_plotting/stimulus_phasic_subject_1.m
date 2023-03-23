@@ -103,22 +103,24 @@ for isubject = 1: length(subs)
                 % return indices for binned pupil
                 binnedPupil_idx{ibin}           = I(bin2run(ibin): bin2run(ibin+1));
                 tmpBin                          = [];
-%                 tmpBin(1: binSize)              = ibin;
+                
 
                 if icnd == 1
                     %                     axes(h1);
                     prop_risky_low{isubject, itype}(icnd, ibin) = sum(tmpData.riskyChoice(binnedPupil_idx{ibin})==1)./...
                         length(tmpData.riskyChoice(binnedPupil_idx{ibin}));
 
-                    baselineChange_low{isubject, itype}(icnd, ibin) = baseRiskPref(isubject) - prop_risky_low{isubject, itype}(icnd, ibin);
+                    
                     if prop_risky_low{isubject, itype}(icnd, ibin) >= 0.5 % if risk-seeking on average
-                        diff_risky_low{isubject, itype}(icnd, ibin) = prop_risky_low{isubject, itype}(icnd, ibin) -0.5;
+                        bias_risky_low{isubject, itype}(icnd, ibin) = prop_risky_low{isubject, itype}(icnd, ibin) -0.5;
+%                         baselineChange_low{isubject, itype}(icnd, ibin) = baseRiskPref(isubject) - prop_risky_low{isubject, itype}(icnd, ibin);
+                    
                     else % if risk-averse on average 
-                        diff_risky_low{isubject, itype}(icnd, ibin) = 0.5 - prop_risky_low{isubject, itype}(icnd, ibin) ;
+                        bias_risky_low{isubject, itype}(icnd, ibin) = 0.5 - prop_risky_low{isubject, itype}(icnd, ibin) ;
                     end
 
                     tmpTable        = [];
-                    tmpTable        = [subs(isubject) cnd2run(icnd) itype prop_risky_low{isubject, itype}(icnd, ibin) diff_risky_low{isubject, itype}(icnd, ibin) ibin];
+                    tmpTable        = [subs(isubject) cnd2run(icnd) itype prop_risky_low{isubject, itype}(icnd, ibin) bias_risky_low{isubject, itype}(icnd, ibin) ibin];
                   
                     axes(h4);
                     hold on 
@@ -127,38 +129,38 @@ for isubject = 1: length(subs)
 
                     axes(h7);
                     hold on 
-                    plot(x2plot(ibin), diff_risky_low{isubject, itype}(icnd, ibin), '.', 'MarkerSize', 30,...
+                    plot(x2plot(ibin), bias_risky_low{isubject, itype}(icnd, ibin), '.', 'MarkerSize', 30,...
                     'Color', col2plot_alpha);
 
-                    if baseRiskPref >= 0.5
-                        axes(h9);
-                        hold on 
-                        plot(x2plot(ibin), baselineChange_low{isubject, itype}(icnd, ibin), '.', 'MarkerSize', 30,...
-                        'Color', col2plot_alpha);   
-
-                    else
-                        axes(h10);
-                        hold on 
-                        plot(x2plot(ibin), baselineChange_low{isubject, itype}(icnd, ibin), '.', 'MarkerSize', 30,...
-                        'Color', col2plot_alpha);
-                    end
+%                     if baseRiskPref >= 0.5
+%                         axes(h9);
+%                         hold on 
+%                         plot(x2plot(ibin), baselineChange_low{isubject, itype}(icnd, ibin), '.', 'MarkerSize', 30,...
+%                         'Color', col2plot_alpha);   
+% 
+%                     else
+%                         axes(h10);
+%                         hold on 
+%                         plot(x2plot(ibin), baselineChange_low{isubject, itype}(icnd, ibin), '.', 'MarkerSize', 30,...
+%                         'Color', col2plot_alpha);
+%                     end
 
                 else
                     prop_risky_high{isubject, itype}(icnd, ibin) = sum(tmpData.riskyChoice(binnedPupil_idx{ibin})==1)./...
                         length(tmpData.riskyChoice(binnedPupil_idx{ibin}));
 
-                    baselineChange_high{isubject, itype}(icnd, ibin) = baseRiskPref(isubject) - prop_risky_high{isubject, itype}(icnd, ibin);
+%                     baselineChange_high{isubject, itype}(icnd, ibin) = baseRiskPref(isubject) - prop_risky_high{isubject, itype}(icnd, ibin);
 
                     if prop_risky_high{isubject, itype}(icnd, ibin) >= 0.5 % if risk-seeking on average
-                        diff_risky_high{isubject, itype}(icnd, ibin) = prop_risky_high{isubject, itype}(icnd, ibin) -0.5;
+                        bias_risky_high{isubject, itype}(icnd, ibin) = prop_risky_high{isubject, itype}(icnd, ibin) -0.5;
                     else % if risk-averse on average 
-                        diff_risky_high{isubject, itype}(icnd, ibin) = 0.5 - prop_risky_high{isubject, itype}(icnd, ibin) ;
+                        bias_risky_high{isubject, itype}(icnd, ibin) = 0.5 - prop_risky_high{isubject, itype}(icnd, ibin) ;
                     end
 
                     tmpRT.pupilBin  = tmpBin';
 
                     tmpTable        = [];
-                    tmpTable        = [subs(isubject) cnd2run(icnd) itype prop_risky_high{isubject, itype}(icnd, ibin) diff_risky_high{isubject, itype}(icnd, ibin) ibin];
+                    tmpTable        = [subs(isubject) cnd2run(icnd) itype prop_risky_high{isubject, itype}(icnd, ibin) bias_risky_high{isubject, itype}(icnd, ibin) ibin];
                   
                     axes(h4);
                     hold on 
@@ -167,21 +169,21 @@ for isubject = 1: length(subs)
 
                     axes(h7);
                     hold on 
-                    plot(x2plot(ibin), diff_risky_high{isubject, itype}(icnd, ibin), '.', 'MarkerSize', 30,...
+                    plot(x2plot(ibin), bias_risky_high{isubject, itype}(icnd, ibin), '.', 'MarkerSize', 30,...
                     'Color', col2plot_alpha);
 
-                     if baseRiskPref >= 0.5
-                        axes(h9);
-                        hold on 
-                        plot(x2plot(ibin), baselineChange_high{isubject, itype}(icnd, ibin), '.', 'MarkerSize', 30,...
-                        'Color', col2plot_alpha);   
-
-                    else
-                        axes(h10);
-                        hold on 
-                        plot(x2plot(ibin), baselineChange_high{isubject, itype}(icnd, ibin), '.', 'MarkerSize', 30,...
-                        'Color', col2plot_alpha);
-                    end 
+%                      if baseRiskPref >= 0.5
+%                         axes(h9);
+%                         hold on 
+%                         plot(x2plot(ibin), baselineChange_high{isubject, itype}(icnd, ibin), '.', 'MarkerSize', 30,...
+%                         'Color', col2plot_alpha);   
+% 
+%                     else
+%                         axes(h10);
+%                         hold on 
+%                         plot(x2plot(ibin), baselineChange_high{isubject, itype}(icnd, ibin), '.', 'MarkerSize', 30,...
+%                         'Color', col2plot_alpha);
+%                     end 
                   
                 end
 

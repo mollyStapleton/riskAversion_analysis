@@ -11,11 +11,14 @@ cnd2run = [2 3];
 % stimulus_phasic_grouped;
 
 % stimulus_phasic_subject; 
-stimulus_phasic_subject_1;
+% stimulus_phasic_subject_1;
 % stimulus_blockSplit_subject;
 
 % stimulus_phasic_RT;
 
+% stimulus_phasic_preferences
+
+stimulus_overview; 
 
 end
 

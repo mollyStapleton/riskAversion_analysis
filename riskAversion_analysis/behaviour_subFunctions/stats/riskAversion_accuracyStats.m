@@ -6,9 +6,9 @@ subs = unique(dataIn.pt_number);
 
 figure(1);
 set(gcf, 'units', 'centimeters');
-set(gcf, 'position', [12.8852 8.0222 25.8498 12.1126]);
-ax1 = subplot(1, 2, 1);
-ax2 = subplot(1, 2, 2);
+set(gcf, 'position', [28.0035 0.0212 10.7315 20.6587]);
+ax1 = subplot(2, 1, 1);
+ax2 = subplot(2, 1, 2);
 
 stats_table = [];
 
@@ -90,11 +90,15 @@ set(gca, 'XTickLabelRotation', 45);
 ylabel('Average Choice Accuracy');
 set(gca, 'FontName', 'times');
 sgtitle('\fontsize{14} \bfChoice Accuracy', 'FontName', 'times');
-
-
+ 
 % perform statistics 
 stats_table = array2table(stats_table);
 stats_table.Properties.VariableNames = {'binNum', 'subIdx', 'distType', 'binnedAcc'};
+
+[H,P,CI,STATS] = ttest(stats_table.binnedAcc(stats_table.distType == 1 ),...
+    stats_table.binnedAcc(stats_table.distType == 2 ));
+
+
 stats_table.distType = categorical(stats_table.distType);
 pref_dist_acc = fitglme(stats_table, 'binnedAcc ~ binNum * distType + (1|subIdx)', 'DummyVarCoding', 'Effects');
 an_acc_dist = anova(pref_dist_acc);

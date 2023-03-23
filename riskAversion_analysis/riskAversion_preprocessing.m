@@ -25,9 +25,14 @@ sbr_matrix_gen      = 0;    %returns matrix of total eye blinks during sbr epoch
 
 subject_inclusion   = 0;    %returns indices of subjects to be included in analyses
 
-trialData_eyelink   = 0;    %returns matrix of full data for analyse
+trialData_eyelink   = 1;    %returns matrix of full data for analyse
                             %BEHAVIOUR AND PUPIL
-determinePhasicWin  = 1;    %stat analysis of averaged derivative data to determine appropriate window for phasic pupil
+
+data4TempRegress    = 1;    % returns pupil series and derivative for both ITI locked and RESP locked epochs
+                            % data from this script can be used for
+                            % pupil_temporal_regress.m
+                            
+determinePhasicWin  = 0;    %stat analysis of averaged derivative data to determine appropriate window for phasic pupil
 
 %-------------------------------------------------------------------------
 %-------------------------------------------------------------------------
@@ -39,13 +44,12 @@ concat_behav        = 0;
 concat_all          = 0;
 
 
+ptIdx = [{'019', '020', '021', '022', '023', '024',...
+    '025', '026', '027', '028', '029', '030', '031',...
+    '033', '034', '036', '037', '038',...
+    '039', '040', '042', '044', '045', '046', '047', '048', '049'}];
 
-% ptIdx = [{'019', '020', '021', '022', '023', '024',...
-%     '025', '026', '027', '028', '029', '030', '031',...
-%     '033', '034', '036', '037', '038',...
-%     '039', '040', '042', '044', '045', '046', '047', '048'}];
-
-ptIdx = {'049'};
+% ptIdx = {'049'};
 
 
 %-------------------------------------------------------------------------
@@ -122,7 +126,7 @@ for isubject = 1: length(ptIdx)
             saveFilename = ['P' ptIdx{isubject} 'BLK' num2str(iblock) '_extracted.mat'];
             figsavename = ['P' ptIdx{isubject} 'BLK' num2str(iblock) '_processedPupil'];
 
-            if exist(saveFilename)
+            if ~exist(saveFilename)
     
                 [trl] = preprocess_eyelink(raw_path, ptIdx{isubject}, iblock);
                 cd(process_path);
@@ -150,8 +154,7 @@ if trialData_eyelink
             cd(process_path);
 
             loadEyeFilename = ['P' ptIdx{isubject} 'BLK' num2str(iblock) '_extracted.mat'];    
-            loadBehavFilename = ['fullSession_' num2str(ptIdx{isubject}) '.mat'];
-
+           
             if ~exist(loadEyeFilename)
                 continue;
             else
@@ -187,6 +190,13 @@ if determinePhasicWin
     phasic_win([base_path 'population_dataAnalysis\'], fullData_riskAversion)
 
 end
+
+if data4TempRegress
+
+        [fullData] =  extract_allTr_pupil(base_path);
+
+end
+
 
 %-------------------------------------------------------------------------
 %-------------------------------------------------------------------------
@@ -243,7 +253,7 @@ if sbr_matrix_gen
     cd([base_path 'population_dataAnalysis\']);
     loadAllName = ['fullData_riskAversion.mat'];
     load(loadAllName);
-    SBR_dataMat(base_path, dataIn);
+    SBR_dataMat(base_path, fullData_riskAversion);
     
 end
 

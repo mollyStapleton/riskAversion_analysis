@@ -43,7 +43,7 @@ tmpBehav.accChoice((1:length(trials2use)), 1)   = behav2use.choice_high;
 
 for itrial = 1: length(trials2use)
 
-    tmpPupil.baseline_raw = [];
+tmpPupil.baseline_raw = [];
 
 tmpPupil.stim_aligned_pupil = [];
 tmpPupil.stim_aligned_timeVec = [];
@@ -65,6 +65,9 @@ tmpPupil.feedback_preResp_pupil= [];
 tmpPupil.feedback_prtileResp_pupil = [];
 tmpPupil.feedback_derivative =  [];
 
+tmpPupil.full_trial_pupil = [];
+tmpPupil.full_trial_deriv = [];
+
     for iepoch = 1:4
 
         if iepoch == 1
@@ -85,7 +88,7 @@ tmpPupil.feedback_derivative =  [];
 
         elseif iepoch == 3
 
-            alignIdx  = 30; %choiceIndicated
+            alignIdx  = 30; % reward shown 
             epochStart  = -0.2;
             epochEnd    = 1.5;
             phasicStart = -0.8;
