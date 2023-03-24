@@ -1,6 +1,20 @@
+%-----------------------------------------------------------------
+%% ANALYSIS PIPELINE FOR RISK AVERSION STUDY
+%-----------------------------------------------------------------------
+%%% Author: Dr Molly Stapleton, Bristol University
+%%%%%%% Batch analysis for pupil and behavioural data collected in response
+%%%%%%%%%% to two-forced choiced bimodal/gaussian risky reward choice task 
+%-----------------------------------------------------------------------
+% Description of each analysis ran by each script is shown below in the 
+% JOB LIST
+
+clc
 clear all 
 close all 
 
+%----------------------------------------------------------------
+% SET PATH TO WHERE DATA IS STORED 
+%-----------------------------------------------------
 base_path = ['C:\Users\jf22662\OneDrive - University of Bristol\Documents\GitHub\data\'];
 cd(base_path);
 
