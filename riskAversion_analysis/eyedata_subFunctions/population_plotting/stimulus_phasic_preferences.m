@@ -1,3 +1,5 @@
+function stimulus_phasic_preferences(base_path, dataIn)
+
 subs            = unique(dataIn.subIdx);
 binned_all      = [];
 binned_R_all    = [];
@@ -431,3 +433,5 @@ C = dataset2cell(an_1);
 anovaWriteTable(C, 'riskBias_low');
 C1 = dataset2cell(an_2);
 anovaWriteTable(C1, 'riskBias_high');
+
+end

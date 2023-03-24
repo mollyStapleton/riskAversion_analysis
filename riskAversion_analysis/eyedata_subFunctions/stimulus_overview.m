@@ -1,3 +1,5 @@
+function stimulus_overview(base_path, dataIn)
+
 subs    = unique(dataIn.subIdx);
 cnd2run = [2 3];
 
@@ -346,7 +348,7 @@ dataLow = statsData((statsData.cndIdx == 2), :);
 dataHigh = statsData((statsData.cndIdx == 3), :);
 
 
-
+end
 
 
 

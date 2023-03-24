@@ -18,16 +18,27 @@ close all
 base_path = ['C:\Users\jf22662\OneDrive - University of Bristol\Documents\GitHub\data\'];
 cd(base_path);
 
-draft_analysis      = 0;
-%----------------------------------------------------------------------------
-% POPULATION JOBS 
-%----------------------------------------------------------------------------
+%--------------------------------------------------------------------------
+%------------------------------------------------------------------------------
+%%%% JOBS LIST
+%--------------------------------------------------------------------------
+%------------------------------------------------------------------------------
+draft_analysis          = 0;    % mainly in use for drafting analyses through the pipeline
 
-plot_popBehav       = 0;    %plots average and SEM of behaviour across all subjects 
+% ----------------------------- BEHAVIOUR -------------------------------------------
+plot_popBehav           = 0;    % plots average and SEM of behaviour across all subjects: 
+                                % this includes plotting of choice accuracy and
+                                % risk preference behaviour 
 
-analyse_epochStim   = 0;    % accessing scripts to be used for phasic pupil ~ risk preferences
+%------------------------------ PUPIL & BEHAVIOUR --------------------------
+%%%%%% ANALYSIS SPECIFIC TO THE STIMULUS EPOCHS 
+pupilStim_overview      = 1;    % returns statistical overview of pupil activity around the stimulus epoch 
+pupilStim_phasicRisk    = 0;    % perform 3 bin split of phasic stimulus aligned pupil activity and compares
+                                % this to subjects risk preferences and
+                                % bias of choices
 
-temporal_regress    = 1;    % performs the temporal regression analyses
+
+temporal_regress        = 1;    % performs the temporal regression analyses
 %-----------------------------------------------------------------------
 
 % 004, 0010, 0011, 0012: only behaviour data 
@@ -39,9 +50,6 @@ ptIdx = [{'019', '020', '021', '022', '023', '024',...
     '033', '034', '036', '037', '038',...
     '039', '040', '042', '044', '045', '046', '047', '048', '049'}];
 
-% ptIdx = {'031'};
-
-%---- DRAFT ANALYSIS ----------------------------
 
 if draft_analysis
 
@@ -65,7 +73,6 @@ if plot_popBehav
     figSavename = ['populationBehaviour'];
     loadDataFilename = ['allTr_allSubjects.mat'];
     load(loadDataFilename);
-
     plot_populationBehaviour(base_path, allTr_allSubjects);
 
 end
@@ -76,15 +83,21 @@ end
 %-------------------------------------------------------------------------
 %-------------------------------------------------------------------------
 
-if analyse_epochStim
+if pupilStim_overview
 
       cd([base_path 'population_dataAnalysis\']);
       loadAllName = ['fullData_riskAversion.mat'];
       load(loadAllName);
-
-      pupil_stim_analysis([base_path 'population_dataAnalysis\'], fullData_riskAversion);
+      stimulus_overview(base_path, fullData_riskAversion); 
 end
 
+if pupilStim_phasicRisk
+
+      cd([base_path 'population_dataAnalysis\']);
+      loadAllName = ['fullData_riskAversion.mat'];
+      load(loadAllName);
+      stimulus_phasic_preferences(base_path, fullData_riskAversion); 
+end
 
 if temporal_regress
 
