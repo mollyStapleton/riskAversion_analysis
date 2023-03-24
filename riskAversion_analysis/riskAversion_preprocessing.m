@@ -1,18 +1,34 @@
-%%% RISK AVERSION ANALYSIS PIPELINE:
-%%% pre process of both behavioural and eye data 
-%%% concatenates all data into a single structure 
-%%% series of scripts to run plots/stats/analysis etc 
-%%% *** see jobs list and accompanying descriptions ***
+%-----------------------------------------------------------------
+%% PREPROCESSING PIPELINE FOR RISK AVERSION STUDY
+%-----------------------------------------------------------------------
+%%% Author: Dr Molly Stapleton, Bristol University
+%%%%%%% Series of preprocessing scripts for pupil and behavioural data collected in response
+%%%%%%%%%% to two-forced choiced bimodal/gaussian risky reward choice task 
+%-----------------------------------------------------------------------
+% Description of each preprocessing ran by each script is shown below in the 
+% JOB LIST
 
+clc
 clear all 
 close all 
 
+%----------------------------------------------------------------
+% SET PATH TO WHERE DATA IS STORED 
+%-----------------------------------------------------
+% *** please note that this path is used in preprocessing for the saving of
+% processed data and saving of analysis plots i.e., it is the BASE for
+% generation of new folders for saved analyses 
+% *****
 base_path = ['C:\Users\jf22662\OneDrive - University of Bristol\Documents\GitHub\data\'];
+
 cd(base_path);
 
-%---------------------------------
-% SELECT JOB TO RUN 
-%--------------------------------------------
+%--------------------------------------------------------------------------
+%------------------------------------------------------------------------------
+%%%% JOBS LIST
+%--------------------------------------------------------------------------
+%------------------------------------------------------------------------------
+
 preprocess_behav    = 0;    %takes individual participants data and produces a matrix of all relevant information for analysis.
                             %saves this data within each participants folder
                             %produces and saves a figure of behaviour overview
@@ -22,8 +38,6 @@ process_eyelink     = 0;    %raw eye data --> normalised pupil, derivative compu
                             %for all task encodes
 
 sbr_matrix_gen      = 0;    %returns matrix of total eye blinks during sbr epoch, average time of blinks and subject number
-
-subject_inclusion   = 0;    %returns indices of subjects to be included in analyses
 
 trialData_eyelink   = 1;    %returns matrix of full data for analyse
                             %BEHAVIOUR AND PUPIL
@@ -43,6 +57,7 @@ determinePhasicWin  = 0;    %stat analysis of averaged derivative data to determ
 concat_behav        = 0;                              
 concat_all          = 0;
 
+%---------------------------------------------------------------------------------
 
 ptIdx = [{'019', '020', '021', '022', '023', '024',...
     '025', '026', '027', '028', '029', '030', '031',...

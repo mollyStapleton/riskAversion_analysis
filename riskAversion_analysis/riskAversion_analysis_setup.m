@@ -15,7 +15,12 @@ close all
 %----------------------------------------------------------------
 % SET PATH TO WHERE DATA IS STORED 
 %-----------------------------------------------------
+% *** please note that this path is used in preprocessing for the saving of
+% processed data and saving of analysis plots i.e., it is the BASE for
+% generation of new folders for saved analyses 
+% *****
 base_path = ['C:\Users\jf22662\OneDrive - University of Bristol\Documents\GitHub\data\'];
+
 cd(base_path);
 
 %--------------------------------------------------------------------------
