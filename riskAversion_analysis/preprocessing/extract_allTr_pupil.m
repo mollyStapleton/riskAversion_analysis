@@ -5,6 +5,8 @@ ptIdx = [{'019', '020', '021', '022', '023', '024',...
     '033', '034', '036', '037', '038',...
     '039', '040', '042', '044', '045', '046', '047', '048', '049'}];
 
+allSubData = [];
+
 for isubject = 1: length(ptIdx)
 
     fullData = [];
@@ -42,6 +44,7 @@ for isubject = 1: length(ptIdx)
         tmpBehav.distType((1:length(trials2use)), 1)    = behav2use.distType;
         tmpBehav.cndIdx((1:length(trials2use)), 1)      = behav2use.cnd_idx;
         tmpBehav.reward((1:length(trials2use)), 1)      = behav2use.reward_obtained;
+        tmpBehav.stimChosen((1:length(trials2use)), 1)  = behav2use.stimulus_choice;
         tmpBehav.RT((1:length(trials2use)), 1)          = behav2use.RT;
         tmpBehav.riskyChoice((1:length(trials2use)), 1) = behav2use.choice_risky;
         tmpBehav.accChoice((1:length(trials2use)), 1)   = behav2use.choice_high;
@@ -60,20 +63,14 @@ for isubject = 1: length(ptIdx)
 
         end
 
-        itiIdx_start = 40;
-        itiWin       = 2.8;
+        stimIdx_start  = 14;
+        stimWin        = [-0.2 0.8];
         
         respIdx_start = 25;
         respWin       = 3.1;
 
         for itrial = 1: length(trials2use)
-
-            tmpPupil.itiLocked_pupil = [];
-            tmpPupil.itiLocked_deriv = [];
-            tmpPupil.respLocked_pupil = [];
-            tmpPupil.respLocked_deriv = [];
-
-            data2use   = trl(trials2use(itrial)).data;
+           data2use   = trl(trials2use(itrial)).data;
 
            alignPoint_start    = find([data2use(:, 3)] == respIdx_start);
            nonRespIdx(itrial)  = 0;
@@ -104,9 +101,9 @@ for isubject = 1: length(ptIdx)
                 tmpPupil.respLocked_deriv = derivPupil{itrial}(resp_start: resp_end);   
 
                 %-----------------------------------------------
-                %%% ITI LOCKED ACTIVITY: 2.8S FROM ITI START
+                %%% STIM LOCKED ACTIVITY: 2[-0.2 0.8S] FROM STIM ONSET
                 %-------------------------------------------------------
-                alignPoint_start      = find([data2use(:, 3)] == itiIdx_start);
+                alignPoint_start      = find([data2use(:, 3)] == stimIdx_start);
                 
                 aligned_timevec = [];
                 aligned_timevec = (data2use(:, 2) - data2use(alignPoint_start(1), 2));
@@ -114,14 +111,16 @@ for isubject = 1: length(ptIdx)
                 id = find(id == 0);
                 id = id +1;
 
-                aligned_timevec(id) = [];
+                stimStart = [];
+                stimEnd   = [];
                 data2use(id, :) = [];
-                iti_start = 1;
-                [ d, ix ] = min( abs( aligned_timevec - itiWin) ); 
-                iti_end   = ix;
+                [ d, ix ] = min( abs( aligned_timevec - stimWin(1)) ); % -0.5s
+                stim_start = ix;
+                [ d, ix ] = min( abs( aligned_timevec - stimWin(2)) );   % + 1s
+                stim_end = ix;
 
-                tmpPupil.itiLocked_pupil = normPupil{itrial}(iti_start: iti_end);
-                tmpPupil.itiLocked_deriv = derivPupil{itrial}(iti_start: iti_end);
+                tmpPupil.stimLocked_pupil = normPupil{itrial}(stim_start: stim_end);
+                tmpPupil.stimLocked_deriv = derivPupil{itrial}(stim_start: stim_end);
 
             else
                 nonRespIdx(itrial) = 1;
@@ -129,7 +128,7 @@ for isubject = 1: length(ptIdx)
 
             end
 
-            if ~isempty(tmpPupil.itiLocked_pupil)
+            if ~isempty(tmpPupil.stimLocked_pupil)
                 allTr = [allTr; struct2table(tmpPupil, 'AsArray', 1)];
             else
                 continue;
@@ -153,6 +152,11 @@ for isubject = 1: length(ptIdx)
 
     saveFilename = ['P' ptIdx{isubject} '_fullPupilSeries.mat'];
     save(saveFilename, 'fullData');
+
+    allSubData   = [allSubData; fullData];
+    cd('C:\Users\jf22662\OneDrive - University of Bristol\Documents\GitHub\data\population_dataAnalysis\');
+    saveFilename = ['allSubjects_fullPupilSeries.mat'];
+    save(saveFilename, 'allSubData');
 end
 
 end

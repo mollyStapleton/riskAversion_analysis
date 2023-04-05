@@ -28,7 +28,7 @@ cd(base_path);
 %%%% JOBS LIST
 %--------------------------------------------------------------------------
 %------------------------------------------------------------------------------
-draft_analysis          = 1;    % mainly in use for drafting analyses through the pipeline
+draft_analysis          = 0;    % mainly in use for drafting analyses through the pipeline
 
 % ----------------------------- BEHAVIOUR -------------------------------------------
 plot_popBehav           = 0;    % plots average and SEM of behaviour across all subjects: 
@@ -41,7 +41,7 @@ pupilStim_overview      = 0;    % returns statistical overview of pupil activity
 pupilStim_phasicRisk    = 0;    % perform 3 bin split of phasic stimulus aligned pupil activity and compares
                                 % this to subjects risk preferences and
                                 % bias of choices
-pupilStim_timeSeries    = 0;
+pupilStim_timeSeries    = 1;
 
 temporal_regress        = 0;    % performs the temporal regression analyses
 %-----------------------------------------------------------------------
@@ -59,10 +59,9 @@ ptIdx = [{'019', '020', '021', '022', '023', '024',...
 if draft_analysis
 
     cd([base_path 'population_dataAnalysis\']);
-    loadAllName = ['allSubjects_fullPupilSeries.mat'];
+    loadAllName = ['fullData_riskAversion.mat'];
     load(loadAllName);
-%     analysisDrafting([base_path], allSubData)
-    deriv_pupil_rewardSplit([base_path], allSubData);
+    analysisDrafting([base_path], fullData_riskAversion)
 
 end
 
@@ -106,11 +105,6 @@ if pupilStim_phasicRisk
 end
 
 if pupilStim_timeSeries
-      cd([base_path 'population_dataAnalysis\']);
-      loadAllName = ['fullData_riskAversion.mat'];
-      load(loadAllName);
-      stimulus_PSTHs(base_path, fullData_riskAversion); 
-end
 
 if temporal_regress
 

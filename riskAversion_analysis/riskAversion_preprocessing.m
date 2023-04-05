@@ -39,7 +39,7 @@ process_eyelink     = 0;    %raw eye data --> normalised pupil, derivative compu
 
 sbr_matrix_gen      = 0;    %returns matrix of total eye blinks during sbr epoch, average time of blinks and subject number
 
-trialData_eyelink   = 1;    %returns matrix of full data for analyse
+trialData_eyelink   = 0;    %returns matrix of full data for analyse
                             %BEHAVIOUR AND PUPIL
 
 data4TempRegress    = 1;    % returns pupil series and derivative for both ITI locked and RESP locked epochs
@@ -179,6 +179,7 @@ if trialData_eyelink
                 load(loadEyeFilename);
                 [sub_folder, raw_path, process_path] = data_setPath(base_path, ptIdx{isubject}, 1, 0);       
                 cd(process_path);
+                loadBehavFilename = ['fullSession_' ptIdx{isubject} '.mat'];
                 load(loadBehavFilename);
                 [allTr] = trialExtraction_eyeData(trl, allData, ptIdx{isubject}, iblock);
             end

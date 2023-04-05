@@ -35,6 +35,7 @@ tmpBehav.trialNum((1:length(trials2use)), 1)    = trials2use;
 tmpBehav.blockNum((1:length(trials2use)), 1)    = blockNum;
 tmpBehav.distType((1:length(trials2use)), 1)    = behav2use.distType;
 tmpBehav.cndIdx((1:length(trials2use)), 1)      = behav2use.cnd_idx;
+tmpBehav.stimChosen((1:length(trials2use)), 1)  = behav2use.stimulus_choice;
 tmpBehav.reward((1:length(trials2use)), 1)      = behav2use.reward_obtained;
 tmpBehav.RT((1:length(trials2use)), 1)          = behav2use.RT;
 tmpBehav.riskyChoice((1:length(trials2use)), 1) = behav2use.choice_risky;
